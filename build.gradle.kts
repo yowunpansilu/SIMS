@@ -19,4 +19,8 @@ subprojects {
             languageVersion.set(JavaLanguageVersion.of(25))
         }
     }
+
+    tasks.withType<JavaCompile>().configureEach {
+        options.release.set(23)
+    }
 }
