@@ -62,10 +62,28 @@ public class LoginView extends VBox {
         signInBtn.getStyleClass().add(Styles.ACCENT); // Primary color
 
         signInBtn.setOnAction(e -> {
-            System.out.println("Sign In Clicked: " + usernameField.getText());
-            if (onLoginSuccess != null) {
-                onLoginSuccess.run();
-            }
+            String user = usernameField.getText();
+            String pass = passwordField.getText();
+
+            signInBtn.setDisable(true); // Prevent double click
+
+            var apiClient = new com.sims.client.service.ApiClient();
+            apiClient.login(user, pass).thenAccept(success -> {
+                javafx.application.Platform.runLater(() -> {
+                    signInBtn.setDisable(false);
+                    if (success) {
+                        if (onLoginSuccess != null) {
+                            onLoginSuccess.run();
+                        }
+                    } else {
+                        // Creating a simple alert (or just shake the box/red border in future)
+                        var alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR,
+                                "Invalid Credentials");
+                        alert.initOwner(this.getScene().getWindow());
+                        alert.show();
+                    }
+                });
+            });
         });
 
         var forgotPasswordLink = new Hyperlink("Forgot password?");
