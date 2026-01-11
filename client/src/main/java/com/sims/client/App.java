@@ -13,7 +13,15 @@ public class App extends Application {
     public void start(Stage stage) {
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
 
-        var root = new StackPane(new LoginView());
+        // Initial View: Login
+        // We pass a lambda that switches the root to DashboardView upon success
+        var loginView = new LoginView(() -> {
+            stage.getScene().setRoot(new com.sims.client.view.DashboardView());
+            stage.sizeToScene(); // Optional readjust
+            stage.centerOnScreen();
+        });
+
+        var root = new StackPane(loginView);
         var scene = new Scene(root, 900, 600);
 
         stage.setTitle("SIMS - Student Information Management System");

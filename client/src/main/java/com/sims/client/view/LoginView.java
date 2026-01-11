@@ -12,8 +12,11 @@ import javafx.scene.text.Text;
 
 public class LoginView extends VBox {
 
-    public LoginView() {
+    private final Runnable onLoginSuccess;
+
+    public LoginView(Runnable onLoginSuccess) {
         super();
+        this.onLoginSuccess = onLoginSuccess;
         initUI();
     }
 
@@ -60,6 +63,9 @@ public class LoginView extends VBox {
 
         signInBtn.setOnAction(e -> {
             System.out.println("Sign In Clicked: " + usernameField.getText());
+            if (onLoginSuccess != null) {
+                onLoginSuccess.run();
+            }
         });
 
         var forgotPasswordLink = new Hyperlink("Forgot password?");
