@@ -1,5 +1,5 @@
 plugins {
-    id("java")
+    // No plugins at root for now, or base
 }
 
 allprojects {
@@ -9,9 +9,14 @@ allprojects {
     repositories {
         mavenCentral()
     }
-    
-    tasks.withType<JavaCompile> {
-        sourceCompatibility = "21" // User has 25, but 21 is LTS and safe baseline
-        targetCompatibility = "21"
+}
+
+subprojects {
+    apply(plugin = "java")
+
+    extensions.configure<JavaPluginExtension> {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
     }
 }
