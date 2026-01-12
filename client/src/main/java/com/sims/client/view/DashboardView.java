@@ -37,6 +37,8 @@ public class DashboardView extends BorderPane {
         // Nav Buttons
         var overviewBtn = createNavButton("Overview", Material2MZ.SPEED);
         var studentsBtn = createNavButton("Students", Material2MZ.PEOPLE_OUTLINE);
+        studentsBtn.setOnAction(e -> contentArea.getChildren().setAll(new StudentView())); // Simple nav logic for now
+
         var attendanceBtn = createNavButton("Attendance", Material2AL.EVENT_NOTE);
         var resultsBtn = createNavButton("Exam Results", Material2AL.ASSESSMENT);
         var reportsBtn = createNavButton("Reports", Material2MZ.PRINT);
