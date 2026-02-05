@@ -4,7 +4,7 @@ import atlantafx.base.theme.Styles;
 import com.sims.client.model.StudentDTO;
 import com.sims.client.service.ApiClient;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
+
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,9 +14,6 @@ import javafx.scene.layout.*;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.material2.Material2AL;
 import org.kordamp.ikonli.material2.Material2MZ;
-
-import java.time.LocalDate;
-import java.util.Optional;
 
 public class StudentView extends VBox {
 
@@ -29,6 +26,7 @@ public class StudentView extends VBox {
         loadData();
     }
 
+    @SuppressWarnings("unchecked")
     private void initUI() {
         this.setPadding(new Insets(20));
         this.setSpacing(20);
@@ -62,7 +60,7 @@ public class StudentView extends VBox {
 
         // --- Table Section ---
         studentTable = new TableView<>();
-        studentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        studentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         VBox.setVgrow(studentTable, Priority.ALWAYS);
 
         var colAdm = createColumn("Admission No", "admissionNumber");
