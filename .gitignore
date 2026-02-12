@@ -17,6 +17,7 @@ out/
 .project
 .settings/
 bin/
+.agent
 
 # OS
 .DS_Store
