@@ -4,7 +4,7 @@ plugins {
 }
 
 javafx {
-    version = "21"
+    version = "25"
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 
