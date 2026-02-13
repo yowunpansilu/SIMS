@@ -11,7 +11,7 @@ export const studentSchema = z.object({
         .max(100, "Max 100 characters"),
     dateOfBirth: z.string().optional(),
     gender: z.enum(["MALE", "FEMALE", "OTHER"], {
-        required_error: "Gender is required",
+        message: "Gender is required",
     }),
     address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
     contactNumber: z
@@ -19,11 +19,11 @@ export const studentSchema = z.object({
         .regex(/^[0-9+\-\s()]*$/, "Invalid phone number format")
         .optional()
         .or(z.literal("")),
-    grade: z.coerce.number().refine((v) => v === 12 || v === 13, {
+    grade: z.number().refine((v): v is 12 | 13 => v === 12 || v === 13, {
         message: "Grade must be 12 or 13",
     }),
     stream: z.enum(["SCIENCE", "COMMERCE", "ARTS", "TECHNOLOGY", "OTHER"], {
-        required_error: "Stream is required",
+        message: "Stream is required",
     }),
 });
 

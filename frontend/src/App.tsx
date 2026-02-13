@@ -6,17 +6,11 @@ import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import AppShell from "@/components/layout/AppShell";
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
-import PageContainer from "@/components/layout/PageContainer";
-
-function PlaceholderPage({ title, desc }: { title: string; desc: string }) {
-  return (
-    <PageContainer title={title} description={desc}>
-      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed">
-        <p className="text-muted-foreground">Coming soon</p>
-      </div>
-    </PageContainer>
-  );
-}
+import StudentListPage from "@/pages/StudentListPage";
+import StudentDetailPage from "@/pages/StudentDetailPage";
+import DataImportPage from "@/pages/DataImportPage";
+import ReportsPage from "@/pages/ReportsPage";
+import UserManagementPage from "@/pages/UserManagementPage";
 
 export default function App() {
   return (
@@ -36,21 +30,17 @@ export default function App() {
               }
             >
               <Route index element={<DashboardPage />} />
-              <Route
-                path="students"
-                element={<PlaceholderPage title="Students" desc="Manage student records" />}
-              />
-              <Route
-                path="import"
-                element={<PlaceholderPage title="Data Import" desc="Import student data from CSV" />}
-              />
-              <Route
-                path="reports"
-                element={<PlaceholderPage title="Reports" desc="Generate and export reports" />}
-              />
+              <Route path="students" element={<StudentListPage />} />
+              <Route path="students/:id" element={<StudentDetailPage />} />
+              <Route path="import" element={<DataImportPage />} />
+              <Route path="reports" element={<ReportsPage />} />
               <Route
                 path="users"
-                element={<PlaceholderPage title="User Management" desc="Manage user accounts" />}
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <UserManagementPage />
+                  </ProtectedRoute>
+                }
               />
             </Route>
 
