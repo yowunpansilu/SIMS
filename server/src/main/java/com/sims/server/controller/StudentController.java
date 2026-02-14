@@ -2,9 +2,14 @@ package com.sims.server.controller;
 
 import com.sims.server.model.Student;
 import com.sims.server.repository.StudentRepository;
+import com.sims.server.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,11 +19,16 @@ import java.util.List;
 public class StudentController {
 
     @Autowired
+    private StudentService studentService;
+
+    @Autowired
     private StudentRepository studentRepository;
 
     @GetMapping
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    public List<Student> getAllStudents(@RequestParam(required = false) String q,
+            @RequestParam(required = false) String grade,
+            @RequestParam(required = false) String stream) {
+        return studentService.getAllStudents(q, grade, stream);
     }
 
     @GetMapping("/{id}")
@@ -30,15 +40,7 @@ public class StudentController {
 
     @PostMapping
     public Student createStudent(@RequestBody Student student) {
-        System.out.println("Received Create Request: " + student);
-        try {
-            Student saved = studentRepository.save(student);
-            System.out.println("Saved Student ID: " + saved.getId());
-            return saved;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        return studentRepository.save(student);
     }
 
     @PutMapping("/{id}")
@@ -60,11 +62,32 @@ public class StudentController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteStudent(@PathVariable Long id) {
-        return studentRepository.findById(id)
-                .map(student -> {
-                    studentRepository.delete(student);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        studentRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<?> importStudents(@RequestParam("file") MultipartFile file) {
+        try {
+            studentService.importStudents(file);
+            return ResponseEntity.ok().body("Uploaded the file successfully: " + file.getOriginalFilename());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Could not upload the file: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<InputStreamResource> exportStudents() {
+        List<Student> students = studentRepository.findAll();
+        java.io.ByteArrayInputStream in = studentService.exportStudents(students);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=students.csv");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/csv"))
+                .body(new InputStreamResource(in));
     }
 }

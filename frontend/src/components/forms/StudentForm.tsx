@@ -16,7 +16,7 @@ import { Loader2 } from "lucide-react";
 import type { Student } from "@/types";
 
 interface StudentFormProps {
-    student?: Student; // if provided, edit mode
+    student?: Student;
     onSubmit: (data: StudentSchemaType) => Promise<void>;
     onCancel: () => void;
     isSubmitting?: boolean;
@@ -28,13 +28,8 @@ export default function StudentForm({
     onCancel,
     isSubmitting = false,
 }: StudentFormProps) {
-    const {
-        register,
-        handleSubmit,
-        setValue,
-        watch,
-        formState: { errors },
-    } = useForm<StudentSchemaType>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const form = useForm<any>({
         resolver: zodResolver(studentSchema),
         defaultValues: student
             ? {
@@ -51,26 +46,38 @@ export default function StudentForm({
                 admissionNumber: "",
                 fullName: "",
                 dateOfBirth: "",
-                gender: undefined,
+                gender: "",
                 address: "",
                 contactNumber: "",
                 grade: undefined,
-                stream: undefined,
+                stream: "",
             },
     });
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        formState: { errors },
+    } = form;
 
     const selectedGender = watch("gender");
     const selectedStream = watch("stream");
 
+    const onFormSubmit = (data: Record<string, unknown>) => {
+        return onSubmit(data as StudentSchemaType);
+    };
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
                 {/* Admission Number */}
                 <div className="space-y-2">
                     <Label htmlFor="admissionNumber">Admission Number *</Label>
                     <Input id="admissionNumber" placeholder="e.g. ADM2024001" {...register("admissionNumber")} />
                     {errors.admissionNumber && (
-                        <p className="text-xs text-destructive">{errors.admissionNumber.message}</p>
+                        <p className="text-xs text-destructive">{errors.admissionNumber.message as string}</p>
                     )}
                 </div>
 
@@ -79,7 +86,7 @@ export default function StudentForm({
                     <Label htmlFor="fullName">Full Name *</Label>
                     <Input id="fullName" placeholder="Student full name" {...register("fullName")} />
                     {errors.fullName && (
-                        <p className="text-xs text-destructive">{errors.fullName.message}</p>
+                        <p className="text-xs text-destructive">{errors.fullName.message as string}</p>
                     )}
                 </div>
 
@@ -88,7 +95,7 @@ export default function StudentForm({
                     <Label htmlFor="dateOfBirth">Date of Birth</Label>
                     <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
                     {errors.dateOfBirth && (
-                        <p className="text-xs text-destructive">{errors.dateOfBirth.message}</p>
+                        <p className="text-xs text-destructive">{errors.dateOfBirth.message as string}</p>
                     )}
                 </div>
 
@@ -96,8 +103,8 @@ export default function StudentForm({
                 <div className="space-y-2">
                     <Label>Gender *</Label>
                     <Select
-                        value={selectedGender}
-                        onValueChange={(val) => setValue("gender", val as StudentSchemaType["gender"], { shouldValidate: true })}
+                        value={selectedGender as string}
+                        onValueChange={(val) => setValue("gender", val, { shouldValidate: true })}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select gender" />
@@ -109,7 +116,7 @@ export default function StudentForm({
                         </SelectContent>
                     </Select>
                     {errors.gender && (
-                        <p className="text-xs text-destructive">{errors.gender.message}</p>
+                        <p className="text-xs text-destructive">{errors.gender.message as string}</p>
                     )}
                 </div>
 
@@ -117,8 +124,8 @@ export default function StudentForm({
                 <div className="space-y-2">
                     <Label>Grade *</Label>
                     <Select
-                        value={watch("grade")?.toString()}
-                        onValueChange={(val) => setValue("grade", Number(val) as 12 | 13, { shouldValidate: true })}
+                        value={watch("grade")?.toString() || ""}
+                        onValueChange={(val) => setValue("grade", Number(val), { shouldValidate: true })}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select grade" />
@@ -129,7 +136,7 @@ export default function StudentForm({
                         </SelectContent>
                     </Select>
                     {errors.grade && (
-                        <p className="text-xs text-destructive">{errors.grade.message}</p>
+                        <p className="text-xs text-destructive">{errors.grade.message as string}</p>
                     )}
                 </div>
 
@@ -137,8 +144,8 @@ export default function StudentForm({
                 <div className="space-y-2">
                     <Label>Stream *</Label>
                     <Select
-                        value={selectedStream}
-                        onValueChange={(val) => setValue("stream", val as StudentSchemaType["stream"], { shouldValidate: true })}
+                        value={selectedStream as string}
+                        onValueChange={(val) => setValue("stream", val, { shouldValidate: true })}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select stream" />
@@ -152,7 +159,7 @@ export default function StudentForm({
                         </SelectContent>
                     </Select>
                     {errors.stream && (
-                        <p className="text-xs text-destructive">{errors.stream.message}</p>
+                        <p className="text-xs text-destructive">{errors.stream.message as string}</p>
                     )}
                 </div>
 
@@ -161,7 +168,7 @@ export default function StudentForm({
                     <Label htmlFor="contactNumber">Contact Number</Label>
                     <Input id="contactNumber" placeholder="e.g. 0771234567" {...register("contactNumber")} />
                     {errors.contactNumber && (
-                        <p className="text-xs text-destructive">{errors.contactNumber.message}</p>
+                        <p className="text-xs text-destructive">{errors.contactNumber.message as string}</p>
                     )}
                 </div>
             </div>
@@ -171,7 +178,7 @@ export default function StudentForm({
                 <Label htmlFor="address">Address</Label>
                 <Textarea id="address" placeholder="Home address" rows={3} {...register("address")} />
                 {errors.address && (
-                    <p className="text-xs text-destructive">{errors.address.message}</p>
+                    <p className="text-xs text-destructive">{errors.address.message as string}</p>
                 )}
             </div>
 
