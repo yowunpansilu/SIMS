@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useDashboard } from "@/hooks/useDashboard";
 import PageContainer from "@/components/layout/PageContainer";
 import StatCard from "@/components/shared/StatCard";
+import EmptyState from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -288,9 +289,12 @@ export default function DashboardPage() {
                             </table>
                         </div>
                     ) : (
-                        <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-                            No students found. Add your first student to get started.
-                        </div>
+                        <EmptyState
+                            title="No recent students"
+                            description="Newly admitted students will appear here."
+                            icon={Users}
+                            className="min-h-[200px] border-none shadow-none"
+                        />
                     )}
                 </div>
 
