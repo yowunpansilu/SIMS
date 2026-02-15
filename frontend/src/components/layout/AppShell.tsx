@@ -4,11 +4,14 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { cn } from "@/lib/utils";
 
+import { CommandMenu } from "../shared/CommandMenu";
+
 export default function AppShell() {
     const [collapsed, setCollapsed] = useState(false);
 
     return (
         <div className="min-h-screen bg-background">
+            <CommandMenu />
             <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
             <div
                 className={cn(
