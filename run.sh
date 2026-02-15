@@ -16,18 +16,30 @@ cleanup() {
 # Set trap to catch Ctrl+C (SIGINT) and cleanup
 trap cleanup SIGINT SIGTERM
 
-# Start server in background
+# Start Backend
 echo "📡 Starting Server (Spring Boot)..."
-./gradlew :server:bootRun > /dev/null 2>&1 &
+./gradlew :server:bootRun > server.log 2>&1 &
 SERVER_PID=$!
+echo "   Server PID: $SERVER_PID"
 
-# Wait for server to start
-echo "⏳ Waiting for server to start (5 seconds)..."
-sleep 5
+# Wait for backend readiness (up to 60s)
+echo "⏳ Waiting for backend to become ready..."
+for i in {1..60}; do
+  if curl -fsS -I http://localhost:8080 >/dev/null 2>&1; then
+    echo "✅ Backend is up (responded on :8080)"
+    break
+  fi
+  if ! kill -0 $SERVER_PID 2>/dev/null; then
+    echo "❌ Backend process exited unexpectedly. Check server.log"
+    cleanup
+  fi
+  sleep 1
+  if [ "$i" -eq 60 ]; then
+    echo "❌ Backend did not start within 60 seconds. Check server.log"
+    cleanup
+  fi
+done
 
-# Start client in foreground (this allows Ctrl+C to work naturally)
-echo "🖥️  Starting Client (JavaFX Desktop)..."
-echo ""
 echo "✅ SIMS is running!"
 echo "   Server: http://localhost:8080"
 echo "   Client: Desktop window"
