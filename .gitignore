@@ -30,3 +30,6 @@ backendimpli.md
 frontendTasks.md
 backendTasks.md
 proposal.txt
+
+# Frontend Build Artifacts
+client/src/main/resources/web/

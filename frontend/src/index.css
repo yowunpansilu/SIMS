@@ -193,3 +193,24 @@
     }
   }
 }
+
+/* JavaFX WebView rendering safety: disable heavy blur/backdrop effects */
+[data-embed="javafx"] .backdrop-blur,
+[data-embed="javafx"] .backdrop-blur-sm,
+[data-embed="javafx"] .backdrop-blur-md,
+[data-embed="javafx"] .backdrop-blur-lg,
+[data-embed="javafx"] .backdrop-blur-xl,
+[data-embed="javafx"] .backdrop-blur-2xl,
+[data-embed="javafx"] .backdrop-blur-3xl {
+  backdrop-filter: none !important;
+}
+
+[data-embed="javafx"] .blur,
+[data-embed="javafx"] .blur-sm,
+[data-embed="javafx"] .blur-md,
+[data-embed="javafx"] .blur-lg,
+[data-embed="javafx"] .blur-xl,
+[data-embed="javafx"] .blur-2xl,
+[data-embed="javafx"] .blur-3xl {
+  filter: none !important;
+}

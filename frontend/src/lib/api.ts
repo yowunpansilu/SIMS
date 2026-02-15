@@ -5,6 +5,7 @@ const api = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
+    withCredentials: true,
     timeout: 10000,
 });
 
@@ -14,10 +15,19 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             // Clear any stored auth state
-            localStorage.removeItem("sims_user");
-            // Only redirect if not already on login page
-            if (window.location.pathname !== "/login") {
-                window.location.href = "/login";
+            try { localStorage.removeItem("sims_user"); } catch {}
+
+            const isFile = typeof window !== "undefined" && window.location.protocol === "file:";
+            const onLoginAlready = isFile
+                ? window.location.hash === "#/login"
+                : window.location.pathname === "/login";
+
+            if (!onLoginAlready) {
+                if (isFile) {
+                    window.location.hash = "#/login";
+                } else {
+                    window.location.href = "/login";
+                }
             }
         }
         return Promise.reject(error);

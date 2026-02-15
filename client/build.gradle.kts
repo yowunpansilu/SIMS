@@ -5,11 +5,17 @@ plugins {
 
 javafx {
     version = "23"
-    modules = listOf("javafx.controls", "javafx.fxml")
+    modules = listOf("javafx.controls", "javafx.fxml", "javafx.web")
 }
 
 application {
     mainClass.set("com.sims.client.App")
+    // Work around JavaFX WebView Prism RTTexture NPE by forcing software rendering
+    applicationDefaultJvmArgs = listOf(
+        "--enable-native-access=javafx.graphics,javafx.web",
+        "-Djavafx.prism.order=sw",
+        "-Dprism.allowhidpi=true"
+    )
 }
 
 dependencies {
@@ -22,4 +28,35 @@ dependencies {
 
 repositories {
     mavenCentral()
+}
+
+// --- Frontend build & copy into client resources ---
+val frontendDir = rootProject.projectDir.resolve("frontend")
+
+tasks.register<Exec>("npmInstallFrontend") {
+    workingDir = frontendDir
+    commandLine("npm", "ci")
+    isIgnoreExitValue = false
+}
+
+tasks.register<Exec>("npmBuildFrontend") {
+    workingDir = frontendDir
+    commandLine("npm", "run", "build")
+    dependsOn("npmInstallFrontend")
+    isIgnoreExitValue = false
+}
+
+tasks.register<Copy>("copyFrontendDistToResources") {
+    val distDir = frontendDir.resolve("dist")
+    from(distDir)
+    into(project.layout.projectDirectory.dir("src/main/resources/web"))
+    dependsOn("npmBuildFrontend")
+}
+
+tasks.named("processResources") {
+    dependsOn("copyFrontendDistToResources")
+}
+
+tasks.named("run") {
+    dependsOn("copyFrontendDistToResources")
 }

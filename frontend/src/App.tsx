@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Toaster } from "@/components/ui/sonner";
@@ -11,10 +11,13 @@ import StudentDetailPage from "@/pages/StudentDetailPage";
 import DataImportPage from "@/pages/DataImportPage";
 import ReportsPage from "@/pages/ReportsPage";
 import UserManagementPage from "@/pages/UserManagementPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function App() {
+  const isFileProtocol = typeof window !== "undefined" && window.location.protocol === "file:";
+  const Router: any = isFileProtocol ? HashRouter : BrowserRouter;
   return (
-    <BrowserRouter>
+    <Router>
       <ThemeProvider>
         <AuthProvider>
           <Routes>
@@ -45,11 +48,11 @@ export default function App() {
             </Route>
 
             {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <Toaster richColors position="top-right" />
         </AuthProvider>
       </ThemeProvider>
-    </BrowserRouter>
+    </Router>
   );
 }

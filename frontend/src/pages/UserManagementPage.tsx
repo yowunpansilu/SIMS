@@ -3,7 +3,7 @@ import { useUsers } from "@/hooks/useUsers";
 import type { UserSchemaType } from "@/lib/userValidators";
 import type { User } from "@/types";
 import PageContainer from "@/components/layout/PageContainer";
-import DataTable from "@/components/shared/DataTable";
+import { DataTable } from "@/components/shared/DataTable";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import UserForm from "@/components/forms/UserForm";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, MoreHorizontal, Pencil, Trash2, Shield, BookOpen, ClipboardList } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2, Shield, BookOpen, ClipboardList, Users } from "lucide-react";
+import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 
@@ -169,7 +170,19 @@ export default function UserManagementPage() {
                 data={users}
                 isLoading={isLoading}
                 searchPlaceholder="Search users…"
-                emptyMessage="No users found"
+                noResults={
+                    <EmptyState
+                        title="No users found"
+                        description="Create a new user account to grant access."
+                        icon={Users}
+                        action={
+                            <Button onClick={openCreate}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add User
+                            </Button>
+                        }
+                    />
+                }
             />
 
             {/* Create / Edit Sheet */}
@@ -197,7 +210,7 @@ export default function UserManagementPage() {
                 description={`Are you sure you want to delete "${deleteTarget?.fullName}"? This action cannot be undone.`}
                 onConfirm={handleDelete}
                 isLoading={isDeleting}
-                destructive
+                variant="destructive"
             />
         </PageContainer>
     );

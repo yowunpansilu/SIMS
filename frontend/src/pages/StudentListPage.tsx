@@ -20,7 +20,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Users } from "lucide-react";
+import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Student } from "@/types";
@@ -178,7 +179,19 @@ export default function StudentListPage() {
                 isLoading={isLoading}
                 searchKey="fullName"
                 searchPlaceholder="Search students…"
-                emptyMessage="No students found. Add your first student to get started."
+                noResults={
+                    <EmptyState
+                        title="No students found"
+                        description="Get started by adding your first student to the system."
+                        icon={Users}
+                        action={
+                            <Button onClick={handleAdd}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Student
+                            </Button>
+                        }
+                    />
+                }
             />
 
             {/* Add / Edit Sheet */}
