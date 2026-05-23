@@ -10,6 +10,7 @@ import {
     CheckCircle2,
     AlertCircle,
     Loader2,
+    Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,23 @@ interface ImportResult {
 }
 
 type Step = "upload" | "preview" | "importing" | "result";
+
+const CSV_TEMPLATE_HEADERS = [
+    "admissionNumber", "fullName", "dateOfBirth", "gender", "grade", "stream",
+    "medium", "contactNumber", "parentName", "parentContactNumber", "address",
+];
+
+const REQUIRED_COLUMNS = ["admissionNumber", "fullName"];
+
+function downloadTemplate() {
+    const blob = new Blob([CSV_TEMPLATE_HEADERS.join(",") + "\n"], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sims-import-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+}
 
 export default function DataImportPage() {
     const [step, setStep] = useState<Step>("upload");
@@ -57,7 +75,13 @@ export default function DataImportPage() {
                     toast.error("CSV file is empty");
                     return;
                 }
-                setHeaders(Object.keys(data[0]));
+                const cols = Object.keys(data[0]).map((c) => c.trim());
+                const missing = REQUIRED_COLUMNS.filter((req) => !cols.includes(req));
+                if (missing.length > 0) {
+                    toast.error(`CSV is missing required columns: ${missing.join(", ")}`);
+                    return;
+                }
+                setHeaders(cols);
                 setParsedData(data);
                 setStep("preview");
             },
@@ -173,6 +197,10 @@ export default function DataImportPage() {
                         }}
                     />
                     <p className="text-xs text-muted-foreground">CSV files only, max 5MB</p>
+                    <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={downloadTemplate}>
+                        <Download className="mr-1.5 h-3.5 w-3.5" />
+                        Download Template
+                    </Button>
                 </div>
             )}
 

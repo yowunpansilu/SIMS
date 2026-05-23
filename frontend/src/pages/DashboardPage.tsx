@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDashboard } from "@/hooks/useDashboard";
 import PageContainer from "@/components/layout/PageContainer";
@@ -7,9 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     Users,
-    GraduationCap,
-    BookOpen,
-    UserPlus,
     Upload,
     BarChart3,
     RefreshCw,
@@ -18,7 +16,6 @@ import {
 import {
     PieChart,
     Pie,
-    Cell,
     BarChart,
     Bar,
     XAxis,
@@ -28,6 +25,14 @@ import {
     Legend,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import api from "@/lib/api";
+
+interface OLSubjectSummary {
+    subject: string;
+    pass: number;
+    fail: number;
+    [grade: string]: string | number;
+}
 
 // Chart color constants
 const STREAM_COLORS: Record<string, string> = {
@@ -48,12 +53,21 @@ export default function DashboardPage() {
     const { stats, isLoading, error, refresh } = useDashboard();
     const navigate = useNavigate();
 
+    const [olSummary, setOlSummary] = useState<OLSubjectSummary[]>([]);
+    useEffect(() => {
+        api.get<OLSubjectSummary[]>("/dashboard/ol-summary")
+            .then((r) => setOlSummary(r.data))
+            .catch(() => setOlSummary([]));
+    }, []);
+
     // Prepare chart data
-    const streamData = Object.entries(stats.streamCounts).map(([name, value]) => ({
-        name: name.charAt(0) + name.slice(1).toLowerCase(),
-        value,
-        fill: STREAM_COLORS[name] || STREAM_COLORS.OTHER,
-    }));
+    const streamData = Object.entries(stats.streamCounts)
+        .filter(([name]) => name != null)
+        .map(([name, value]) => ({
+            name: name.charAt(0) + name.slice(1).toLowerCase(),
+            value,
+            fill: STREAM_COLORS[name] || STREAM_COLORS.OTHER,
+        }));
 
     const genderData = [
         { name: "Male", value: stats.maleCount, fill: GENDER_COLORS.MALE },
@@ -102,14 +116,14 @@ export default function DashboardPage() {
                     ))
                 ) : (
                     <>
-                        <StatCard title="Total Students" value={stats.totalStudents} icon={Users} />
-                        <StatCard title="Grade 12" value={stats.grade12Count} icon={BookOpen} />
-                        <StatCard title="Grade 13" value={stats.grade13Count} icon={GraduationCap} />
+                        <StatCard title="Total Students" value={stats.totalStudents} accent="blue" />
+                        <StatCard title="Grade 12" value={stats.grade12Count} accent="green" />
+                        <StatCard title="Grade 13" value={stats.grade13Count} accent="purple" />
                         <StatCard
                             title="New Admissions"
-                            value={stats.recentStudents.length}
-                            icon={UserPlus}
-                            description="Recent entries"
+                            value={stats.newAdmissionsThisYear}
+                            accent="amber"
+                            description="Current Grade 12"
                         />
                     </>
                 )}
@@ -134,13 +148,8 @@ export default function DashboardPage() {
                                     innerRadius={50}
                                     outerRadius={90}
                                     paddingAngle={3}
-                                    strokeWidth={2}
-                                    stroke="hsl(var(--card))"
-                                >
-                                    {streamData.map((entry, i) => (
-                                        <Cell key={i} fill={entry.fill} />
-                                    ))}
-                                </Pie>
+                                    strokeWidth={0}
+                                />
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: "hsl(var(--card))",
@@ -176,13 +185,8 @@ export default function DashboardPage() {
                                     innerRadius={50}
                                     outerRadius={90}
                                     paddingAngle={3}
-                                    strokeWidth={2}
-                                    stroke="hsl(var(--card))"
-                                >
-                                    {genderData.map((entry, i) => (
-                                        <Cell key={i} fill={entry.fill} />
-                                    ))}
-                                </Pie>
+                                    strokeWidth={0}
+                                />
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: "hsl(var(--card))",
@@ -227,6 +231,30 @@ export default function DashboardPage() {
                     )}
                 </div>
             </div>
+
+            {/* ── O/L Results Performance ── */}
+            {olSummary.length > 0 && (
+                <div className="rounded-lg border bg-card p-6 shadow-sm">
+                    <h3 className="mb-4 text-lg font-semibold">O/L Results — Pass vs Fail by Subject</h3>
+                    <ResponsiveContainer width="100%" height={260}>
+                        <BarChart data={olSummary} barSize={20} barGap={4}>
+                            <XAxis dataKey="subject" tick={{ fontSize: 12 }} />
+                            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: "hsl(var(--card))",
+                                    border: "1px solid hsl(var(--border))",
+                                    borderRadius: "8px",
+                                    fontSize: "13px",
+                                }}
+                            />
+                            <Legend />
+                            <Bar dataKey="pass" name="Pass" fill="hsl(145, 65%, 42%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="fail" name="Fail" fill="hsl(0, 72%, 51%)" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
 
             {/* ── Bottom Row: Recent Students + Quick Actions ── */}
             <div className="grid gap-4 lg:grid-cols-3">
@@ -307,8 +335,8 @@ export default function DashboardPage() {
                             className="w-full justify-start gap-3 h-12"
                             onClick={() => navigate("/students")}
                         >
-                            <UserPlus className="h-5 w-5 text-primary" />
-                            Add New Student
+                            <BarChart3 className="h-5 w-5 text-primary" />
+                            View Students
                         </Button>
                         <Button
                             variant="outline"

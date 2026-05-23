@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 import type { Student } from "@/types";
 
+const API_BASE = (api.defaults.baseURL ?? "").replace(/\/$/, "");
+
 type ReportType = "all-students" | "by-grade" | "by-stream" | "by-gender";
 
 const reportTypes: { id: ReportType; label: string; description: string; icon: React.ElementType }[] = [
@@ -59,6 +61,29 @@ export default function ReportsPage() {
     const [filterGrade, setFilterGrade] = useState<string>("all");
     const [filterStream, setFilterStream] = useState<string>("all");
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+    const handleGeneratePdf = async () => {
+        setIsGeneratingPdf(true);
+        try {
+            const params = new URLSearchParams();
+            if (selectedReport === "by-grade" && filterGrade !== "all") params.set("grade", filterGrade);
+            if (selectedReport === "by-stream" && filterStream !== "all") params.set("stream", filterStream);
+            const url = `${API_BASE}/students/export/pdf${params.size > 0 ? "?" + params.toString() : ""}`;
+            const res = await api.get(url, { responseType: "blob" });
+            const blob = new Blob([res.data], { type: "application/pdf" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "students-report.pdf";
+            a.click();
+            URL.revokeObjectURL(a.href);
+            toast.success("PDF downloaded");
+        } catch {
+            toast.error("Failed to generate PDF");
+        } finally {
+            setIsGeneratingPdf(false);
+        }
+    };
 
     const handleGenerate = async () => {
         setIsGenerating(true);
@@ -73,7 +98,7 @@ export default function ReportsPage() {
                     break;
                 case "by-grade":
                     if (filterGrade !== "all") {
-                        students = students.filter((s) => s.grade === Number(filterGrade));
+                        students = students.filter((s) => s.grade === filterGrade);
                         filename = `grade-${filterGrade}-students`;
                     } else {
                         filename = "students-by-grade";
@@ -182,13 +207,21 @@ export default function ReportsPage() {
                         </div>
                     </div>
 
-                    <Button className="w-full h-12" onClick={handleGenerate} disabled={isGenerating}>
+                    <Button className="w-full h-12" onClick={handleGenerate} disabled={isGenerating || isGeneratingPdf}>
                         {isGenerating ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : (
                             <Download className="mr-2 h-4 w-4" />
                         )}
                         {isGenerating ? "Generating…" : "Generate & Download CSV"}
+                    </Button>
+                    <Button variant="outline" className="w-full h-12" onClick={handleGeneratePdf} disabled={isGenerating || isGeneratingPdf}>
+                        {isGeneratingPdf ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <FileText className="mr-2 h-4 w-4" />
+                        )}
+                        {isGeneratingPdf ? "Generating PDF…" : "Export as PDF"}
                     </Button>
                 </div>
             </div>

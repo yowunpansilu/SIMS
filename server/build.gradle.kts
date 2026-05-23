@@ -11,6 +11,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("com.opencsv:opencsv:5.9")
     implementation("org.apache.poi:poi-ooxml:5.2.5")
+    implementation("com.itextpdf:itext-core:9.1.0")
     runtimeOnly("com.mysql:mysql-connector-j")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
