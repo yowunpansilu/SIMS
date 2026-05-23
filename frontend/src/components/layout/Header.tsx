@@ -17,9 +17,12 @@ import { useNavigate } from "react-router-dom";
 const breadcrumbMap: Record<string, string> = {
     "/": "Dashboard",
     "/students": "Students",
+    "/applications": "Applications",
     "/import": "Data Import",
     "/reports": "Reports",
+    "/promote": "Promotion",
     "/users": "User Management",
+    "/audit": "Audit Log",
 };
 
 export default function Header() {

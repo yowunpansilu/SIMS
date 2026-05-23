@@ -1,6 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { studentSchema, type StudentSchemaType } from "@/lib/validators";
+import { AL_STREAM_LABELS, type ALStream } from "@/lib/alSubjects";
+import ALSubjectSelector from "./ALSubjectSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,83 +30,97 @@ export default function StudentForm({
     onCancel,
     isSubmitting = false,
 }: StudentFormProps) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const form = useForm<any>({
+    const form = useForm<StudentSchemaType>({
         resolver: zodResolver(studentSchema),
         defaultValues: student
             ? {
-                admissionNumber: student.admissionNumber,
+                admissionNumber: student.admissionNumber || "",
                 fullName: student.fullName,
                 dateOfBirth: student.dateOfBirth || "",
                 gender: student.gender,
                 address: student.address || "",
                 contactNumber: student.contactNumber || "",
+                whatsappNumber: student.whatsappNumber || "",
+                nicNumber: student.nicNumber || "",
                 grade: student.grade,
-                stream: student.stream,
+                alStream: student.alStream,
+                alSubjects: student.alSubjects ?? [],
+                medium: student.medium,
+                parentName: student.parentName || "",
+                parentContactNumber: student.parentContactNumber || "",
+                alApplicationStatus: student.alApplicationStatus,
             }
             : {
                 admissionNumber: "",
                 fullName: "",
                 dateOfBirth: "",
-                gender: "",
+                gender: undefined,
                 address: "",
                 contactNumber: "",
+                whatsappNumber: "",
+                nicNumber: "",
                 grade: undefined,
-                stream: "",
+                alStream: undefined,
+                alSubjects: [],
+                medium: undefined,
+                parentName: "",
+                parentContactNumber: "",
+                alApplicationStatus: undefined,
             },
     });
 
-    const {
-        register,
-        handleSubmit,
-        setValue,
-        watch,
-        formState: { errors },
-    } = form;
-
-    const selectedGender = watch("gender");
-    const selectedStream = watch("stream");
-
-    const onFormSubmit = (data: Record<string, unknown>) => {
-        return onSubmit(data as StudentSchemaType);
-    };
+    const { register, handleSubmit, setValue, watch, formState: { errors } } = form;
+    const alStream = watch("alStream");
+    const alSubjects = watch("alSubjects") ?? [];
 
     return (
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
-                {/* Admission Number */}
                 <div className="space-y-2">
-                    <Label htmlFor="admissionNumber">Admission Number *</Label>
-                    <Input id="admissionNumber" placeholder="e.g. ADM2024001" {...register("admissionNumber")} />
+                    <Label htmlFor="admissionNumber">
+                        Admission Number
+                        {student?.studentType !== "EXTERNAL" && " *"}
+                    </Label>
+                    <Input
+                        id="admissionNumber"
+                        placeholder="e.g. ADM2024001"
+                        {...register("admissionNumber")}
+                    />
                     {errors.admissionNumber && (
-                        <p className="text-xs text-destructive">{errors.admissionNumber.message as string}</p>
+                        <p className="text-xs text-destructive">{errors.admissionNumber.message}</p>
                     )}
                 </div>
 
-                {/* Full Name */}
                 <div className="space-y-2">
                     <Label htmlFor="fullName">Full Name *</Label>
                     <Input id="fullName" placeholder="Student full name" {...register("fullName")} />
                     {errors.fullName && (
-                        <p className="text-xs text-destructive">{errors.fullName.message as string}</p>
+                        <p className="text-xs text-destructive">{errors.fullName.message}</p>
                     )}
                 </div>
 
-                {/* Date of Birth */}
+                <div className="space-y-2">
+                    <Label htmlFor="nicNumber">NIC Number</Label>
+                    <Input id="nicNumber" placeholder="12-digit NIC" {...register("nicNumber")} />
+                    {errors.nicNumber && (
+                        <p className="text-xs text-destructive">{errors.nicNumber.message}</p>
+                    )}
+                </div>
+
                 <div className="space-y-2">
                     <Label htmlFor="dateOfBirth">Date of Birth</Label>
                     <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
-                    {errors.dateOfBirth && (
-                        <p className="text-xs text-destructive">{errors.dateOfBirth.message as string}</p>
-                    )}
                 </div>
 
-                {/* Gender */}
                 <div className="space-y-2">
                     <Label>Gender *</Label>
                     <Select
-                        value={selectedGender as string}
-                        onValueChange={(val) => setValue("gender", val, { shouldValidate: true })}
+                        value={watch("gender") || ""}
+                        onValueChange={(v) =>
+                            setValue("gender", v as StudentSchemaType["gender"], {
+                                shouldValidate: true,
+                            })
+                        }
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select gender" />
@@ -116,16 +132,19 @@ export default function StudentForm({
                         </SelectContent>
                     </Select>
                     {errors.gender && (
-                        <p className="text-xs text-destructive">{errors.gender.message as string}</p>
+                        <p className="text-xs text-destructive">{errors.gender.message}</p>
                     )}
                 </div>
 
-                {/* Grade */}
                 <div className="space-y-2">
                     <Label>Grade *</Label>
                     <Select
-                        value={watch("grade")?.toString() || ""}
-                        onValueChange={(val) => setValue("grade", Number(val), { shouldValidate: true })}
+                        value={watch("grade") || ""}
+                        onValueChange={(v) =>
+                            setValue("grade", v as StudentSchemaType["grade"], {
+                                shouldValidate: true,
+                            })
+                        }
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select grade" />
@@ -136,55 +155,152 @@ export default function StudentForm({
                         </SelectContent>
                     </Select>
                     {errors.grade && (
-                        <p className="text-xs text-destructive">{errors.grade.message as string}</p>
+                        <p className="text-xs text-destructive">{errors.grade.message}</p>
                     )}
                 </div>
 
-                {/* Stream */}
                 <div className="space-y-2">
-                    <Label>Stream *</Label>
+                    <Label>A/L Stream</Label>
                     <Select
-                        value={selectedStream as string}
-                        onValueChange={(val) => setValue("stream", val, { shouldValidate: true })}
+                        value={watch("alStream") || ""}
+                        onValueChange={(v) => {
+                            setValue("alStream", v as ALStream, { shouldValidate: true });
+                            setValue("alSubjects", []); // reset subjects when stream changes
+                        }}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select stream" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="SCIENCE">Science</SelectItem>
-                            <SelectItem value="COMMERCE">Commerce</SelectItem>
-                            <SelectItem value="ARTS">Arts</SelectItem>
-                            <SelectItem value="TECHNOLOGY">Technology</SelectItem>
-                            <SelectItem value="OTHER">Other</SelectItem>
+                            {(Object.keys(AL_STREAM_LABELS) as ALStream[]).map((s) => (
+                                <SelectItem key={s} value={s}>
+                                    {AL_STREAM_LABELS[s]}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
-                    {errors.stream && (
-                        <p className="text-xs text-destructive">{errors.stream.message as string}</p>
-                    )}
                 </div>
 
-                {/* Contact Number */}
+                <div className="space-y-2">
+                    <Label>Medium</Label>
+                    <Select
+                        value={watch("medium") || ""}
+                        onValueChange={(v) =>
+                            setValue("medium", v as StudentSchemaType["medium"], {
+                                shouldValidate: true,
+                            })
+                        }
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select medium" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="SINHALA">Sinhala</SelectItem>
+                            <SelectItem value="TAMIL">Tamil</SelectItem>
+                            <SelectItem value="ENGLISH">English</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="space-y-2">
+                    <Label>A/L Application Status</Label>
+                    <Select
+                        value={watch("alApplicationStatus") || ""}
+                        onValueChange={(v) =>
+                            setValue(
+                                "alApplicationStatus",
+                                v as StudentSchemaType["alApplicationStatus"],
+                                { shouldValidate: true }
+                            )
+                        }
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="NOT_APPLIED">Not Applied</SelectItem>
+                            <SelectItem value="APPLIED">Applied</SelectItem>
+                            <SelectItem value="PENDING">Pending</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <div className="space-y-2">
                     <Label htmlFor="contactNumber">Contact Number</Label>
-                    <Input id="contactNumber" placeholder="e.g. 0771234567" {...register("contactNumber")} />
+                    <Input
+                        id="contactNumber"
+                        placeholder="e.g. 0771234567"
+                        {...register("contactNumber")}
+                    />
                     {errors.contactNumber && (
-                        <p className="text-xs text-destructive">{errors.contactNumber.message as string}</p>
+                        <p className="text-xs text-destructive">{errors.contactNumber.message}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
+                    <Input
+                        id="whatsappNumber"
+                        placeholder="e.g. 0771234567"
+                        {...register("whatsappNumber")}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="parentName">Parent / Guardian Name</Label>
+                    <Input
+                        id="parentName"
+                        placeholder="Guardian full name"
+                        {...register("parentName")}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="parentContactNumber">Parent / Guardian Contact</Label>
+                    <Input
+                        id="parentContactNumber"
+                        placeholder="e.g. 0771234567"
+                        {...register("parentContactNumber")}
+                    />
+                    {errors.parentContactNumber && (
+                        <p className="text-xs text-destructive">
+                            {errors.parentContactNumber.message}
+                        </p>
                     )}
                 </div>
             </div>
 
-            {/* Address — full width */}
+            {alStream && (
+                <div className="space-y-2">
+                    <Label>A/L Subjects</Label>
+                    <ALSubjectSelector
+                        stream={alStream as ALStream}
+                        value={alSubjects}
+                        onChange={(subjects) =>
+                            setValue("alSubjects", subjects, { shouldValidate: true })
+                        }
+                        error={errors.alSubjects?.message as string}
+                    />
+                </div>
+            )}
+
             <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
-                <Textarea id="address" placeholder="Home address" rows={3} {...register("address")} />
-                {errors.address && (
-                    <p className="text-xs text-destructive">{errors.address.message as string}</p>
-                )}
+                <Textarea
+                    id="address"
+                    placeholder="Home address"
+                    rows={3}
+                    {...register("address")}
+                />
             </div>
 
-            {/* Actions */}
             <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCancel}
+                    disabled={isSubmitting}
+                >
                     Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>

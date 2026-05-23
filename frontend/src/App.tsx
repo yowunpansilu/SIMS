@@ -11,6 +11,9 @@ import StudentDetailPage from "@/pages/StudentDetailPage";
 import DataImportPage from "@/pages/DataImportPage";
 import ReportsPage from "@/pages/ReportsPage";
 import UserManagementPage from "@/pages/UserManagementPage";
+import PromotionPage from "@/pages/PromotionPage";
+import AuditLogPage from "@/pages/AuditLogPage";
+import ApplicationsPage from "@/pages/ApplicationsPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function App() {
@@ -38,10 +41,34 @@ export default function App() {
               <Route path="import" element={<DataImportPage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route
+                path="promote"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CLERK"]}>
+                    <PromotionPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="users"
                 element={
                   <ProtectedRoute allowedRoles={["ADMIN"]}>
                     <UserManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="applications"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <ApplicationsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="audit"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <AuditLogPage />
                   </ProtectedRoute>
                 }
               />

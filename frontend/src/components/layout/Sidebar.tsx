@@ -11,9 +11,10 @@ import {
     GraduationCap,
     ChevronLeft,
     ChevronRight,
+    ArrowUpCircle,
+    ClipboardList,
+    ClipboardCheck,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
     Tooltip,
     TooltipContent,
@@ -32,9 +33,12 @@ interface NavItem {
 const navItems: NavItem[] = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/" },
     { label: "Students", icon: Users, href: "/students" },
+    { label: "Applications", icon: ClipboardCheck, href: "/applications", roles: ["ADMIN"] },
     { label: "Data Import", icon: Upload, href: "/import", roles: ["ADMIN", "CLERK"] },
     { label: "Reports", icon: BarChart3, href: "/reports" },
+    { label: "Promotion", icon: ArrowUpCircle, href: "/promote", roles: ["ADMIN", "CLERK"] },
     { label: "User Management", icon: Settings, href: "/users", roles: ["ADMIN"] },
+    { label: "Audit Log", icon: ClipboardList, href: "/audit", roles: ["ADMIN"] },
 ];
 
 interface SidebarProps {
@@ -55,28 +59,40 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         (item) => !item.roles || (user && item.roles.includes(user.role))
     );
 
+    const roleLabel = user?.role
+        ? user.role.charAt(0) + user.role.slice(1).toLowerCase()
+        : "";
+
+    const initials = user?.fullName
+        ? user.fullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+        : user?.username?.slice(0, 2).toUpperCase() || "U";
+
     return (
         <TooltipProvider delayDuration={0}>
             <aside
                 className={cn(
-                    "fixed left-0 top-0 z-40 flex h-screen flex-col border-r bg-card transition-all duration-300 ease-in-out",
+                    "fixed left-0 top-0 z-40 flex h-screen flex-col bg-zinc-950 transition-all duration-300 ease-in-out",
                     collapsed ? "w-[68px]" : "w-64"
                 )}
             >
                 {/* Brand */}
-                <div className="flex h-16 items-center gap-3 border-b px-4">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <GraduationCap className="h-5 w-5" />
+                <div className={cn(
+                    "flex h-16 items-center border-b border-zinc-800",
+                    collapsed ? "justify-center px-0" : "gap-3 px-5"
+                )}>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white">
+                        <GraduationCap className="h-4 w-4 text-zinc-950" />
                     </div>
                     {!collapsed && (
-                        <div className="overflow-hidden transition-all duration-300">
-                            <h1 className="text-lg font-bold tracking-tight">SIMS</h1>
+                        <div className="overflow-hidden">
+                            <h1 className="text-sm font-bold tracking-widest text-white uppercase">SIMS</h1>
+                            <p className="text-[10px] text-zinc-500 tracking-wide">A/L Management</p>
                         </div>
                     )}
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+                <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
                     {visibleItems.map((item) => {
                         const link = (
                             <NavLink
@@ -86,13 +102,14 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                                 className={({ isActive }) =>
                                     cn(
                                         "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                                        collapsed && "justify-center px-0 py-2.5",
                                         isActive
-                                            ? "bg-primary text-primary-foreground"
-                                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                            ? "bg-zinc-800 text-white"
+                                            : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
                                     )
                                 }
                             >
-                                <item.icon className="h-5 w-5 shrink-0" />
+                                <item.icon className="h-4 w-4 shrink-0" />
                                 {!collapsed && <span className="truncate">{item.label}</span>}
                             </NavLink>
                         );
@@ -101,7 +118,9 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                             return (
                                 <Tooltip key={item.href}>
                                     <TooltipTrigger asChild>{link}</TooltipTrigger>
-                                    <TooltipContent side="right">{item.label}</TooltipContent>
+                                    <TooltipContent side="right" className="bg-zinc-800 text-white border-zinc-700">
+                                        {item.label}
+                                    </TooltipContent>
                                 </Tooltip>
                             );
                         }
@@ -109,50 +128,54 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     })}
                 </nav>
 
-                <Separator />
+                {/* Divider */}
+                <div className="border-t border-zinc-800" />
 
                 {/* User + Logout */}
-                <div className="p-3">
+                <div className="p-3 space-y-1">
                     {!collapsed && user && (
-                        <div className="mb-2 rounded-md bg-muted/50 px-3 py-2">
-                            <p className="truncate text-sm font-medium">{user.fullName || user.username}</p>
-                            <p className="truncate text-xs text-muted-foreground capitalize">
-                                {user.role.toLowerCase().replace("_", " ")}
-                            </p>
+                        <div className="mb-2 flex items-center gap-2.5 rounded-md bg-zinc-900 px-3 py-2.5">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-700 text-xs font-semibold text-white">
+                                {initials}
+                            </div>
+                            <div className="overflow-hidden">
+                                <p className="truncate text-xs font-medium text-zinc-100">
+                                    {user.fullName || user.username}
+                                </p>
+                                <p className="truncate text-[10px] text-zinc-500">{roleLabel}</p>
+                            </div>
                         </div>
                     )}
+
                     {collapsed ? (
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="w-full text-muted-foreground hover:text-destructive"
+                                <button
+                                    className="flex w-full items-center justify-center rounded-md py-2 text-zinc-500 hover:bg-zinc-900 hover:text-red-400 transition-colors"
                                     onClick={handleLogout}
                                 >
-                                    <LogOut className="h-5 w-5" />
-                                </Button>
+                                    <LogOut className="h-4 w-4" />
+                                </button>
                             </TooltipTrigger>
-                            <TooltipContent side="right">Sign Out</TooltipContent>
+                            <TooltipContent side="right" className="bg-zinc-800 text-white border-zinc-700">
+                                Sign Out
+                            </TooltipContent>
                         </Tooltip>
                     ) : (
-                        <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive"
+                        <button
+                            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-500 hover:bg-zinc-900 hover:text-red-400 transition-colors"
                             onClick={handleLogout}
                         >
-                            <LogOut className="h-5 w-5" />
+                            <LogOut className="h-4 w-4 shrink-0" />
                             Sign Out
-                        </Button>
+                        </button>
                     )}
                 </div>
 
                 {/* Collapse toggle */}
-                <div className="border-t p-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="w-full"
+                <div className="border-t border-zinc-800 p-2">
+                    <button
+                        className="flex w-full items-center justify-center rounded-md py-1.5 text-zinc-600 hover:bg-zinc-900 hover:text-zinc-400 transition-colors"
                         onClick={onToggle}
                         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     >
@@ -161,7 +184,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                         ) : (
                             <ChevronLeft className="h-4 w-4" />
                         )}
-                    </Button>
+                    </button>
                 </div>
             </aside>
         </TooltipProvider>
