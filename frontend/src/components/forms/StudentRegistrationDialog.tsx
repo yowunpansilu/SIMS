@@ -199,7 +199,7 @@ function Step1Form({
                     <Label htmlFor="nicNumber">NIC Number *</Label>
                     <Input
                         id="nicNumber"
-                        placeholder="12-digit NIC number"
+                        placeholder="12 digits or 9 digits + V/X"
                         {...register("nicNumber")}
                     />
                     {errors.nicNumber && (
@@ -256,12 +256,15 @@ function Step1Form({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                    <Label htmlFor="dateOfBirth">Date of Birth *</Label>
                     <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
+                    {errors.dateOfBirth && (
+                        <p className="text-xs text-destructive">{errors.dateOfBirth.message as string}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="contactNumber">Contact Number</Label>
+                    <Label htmlFor="contactNumber">Contact Number *</Label>
                     <Input
                         id="contactNumber"
                         placeholder="e.g. 0771234567"
@@ -273,40 +276,52 @@ function Step1Form({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
+                    <Label htmlFor="whatsappNumber">WhatsApp Number *</Label>
                     <Input
                         id="whatsappNumber"
                         placeholder="e.g. 0771234567"
                         {...register("whatsappNumber")}
                     />
+                    {errors.whatsappNumber && (
+                        <p className="text-xs text-destructive">{errors.whatsappNumber.message as string}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="parentName">Parent / Guardian Name</Label>
+                    <Label htmlFor="parentName">Parent / Guardian Name *</Label>
                     <Input
                         id="parentName"
                         placeholder="Guardian full name"
                         {...register("parentName")}
                     />
+                    {errors.parentName && (
+                        <p className="text-xs text-destructive">{errors.parentName.message as string}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="parentContactNumber">Parent / Guardian Contact</Label>
+                    <Label htmlFor="parentContactNumber">Parent / Guardian Contact *</Label>
                     <Input
                         id="parentContactNumber"
                         placeholder="e.g. 0771234567"
                         {...register("parentContactNumber")}
                     />
+                    {errors.parentContactNumber && (
+                        <p className="text-xs text-destructive">{errors.parentContactNumber.message as string}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="address">Address *</Label>
                     <Textarea
                         id="address"
                         placeholder="Home address"
                         rows={2}
                         {...register("address")}
                     />
+                    {errors.address && (
+                        <p className="text-xs text-destructive">{errors.address.message as string}</p>
+                    )}
                 </div>
             </div>
 
@@ -694,7 +709,6 @@ function Step3Form({
                     <SelectContent>
                         <SelectItem value="NOT_APPLIED">Not Applied</SelectItem>
                         <SelectItem value="APPLIED">Applied</SelectItem>
-                        <SelectItem value="PENDING">Pending</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
