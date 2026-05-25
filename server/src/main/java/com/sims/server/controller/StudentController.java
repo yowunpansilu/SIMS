@@ -136,6 +136,21 @@ public class StudentController {
         }
     }
 
+    @PostMapping("/{id}/requeue")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> requeueStudent(@PathVariable Long id) {
+        return studentRepository.findById(id)
+                .map(student -> {
+                    student.setRegistrationStatus("PENDING_APPROVAL");
+                    student.setRejectionReason(null);
+                    Student saved = studentRepository.save(student);
+                    auditService.log("REQUEUE_EXTERNAL_STUDENT",
+                            "Re-queued: " + saved.getFullName());
+                    return ResponseEntity.ok(saved);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/import")
     public ResponseEntity<ImportResultDTO> importStudents(@RequestParam("file") MultipartFile file) {
         try {

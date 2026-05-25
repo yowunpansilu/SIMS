@@ -308,7 +308,7 @@ export default function DashboardPage() {
                                                         student.stream === "TECHNOLOGY" && "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
                                                     )}
                                                 >
-                                                    {student.stream.charAt(0) + student.stream.slice(1).toLowerCase()}
+                                                    {student.stream ? student.stream.charAt(0) + student.stream.slice(1).toLowerCase() : '—'}
                                                 </span>
                                             </td>
                                         </tr>

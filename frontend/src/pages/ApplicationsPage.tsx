@@ -28,7 +28,16 @@ import {
     XCircle,
     ClipboardList,
     Loader2,
+    RotateCcw,
+    Trash2,
+    Info,
 } from "lucide-react";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -40,14 +49,14 @@ const STATUS_STYLES: Record<string, string> = {
     REJECTED:         "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
-type TabValue = "ALL" | "PENDING_APPROVAL" | "REJECTED";
+type TabValue = "PENDING_APPROVAL" | "REJECTED";
 
 export default function ApplicationsPage() {
-    const { students, isLoading, approveStudent, rejectStudent } = useStudents({
+    const { students, isLoading, approveStudent, rejectStudent, requeueStudent, deleteStudent } = useStudents({
         studentType: "EXTERNAL",
     });
 
-    const [activeTab, setActiveTab] = useState<TabValue>("ALL");
+    const [activeTab, setActiveTab] = useState<TabValue>("PENDING_APPROVAL");
 
     // Approve dialog state
     const [approveTarget, setApproveTarget] = useState<Student | null>(null);
@@ -59,10 +68,13 @@ export default function ApplicationsPage() {
     const [rejectReason, setRejectReason] = useState("");
     const [isRejecting, setIsRejecting] = useState(false);
 
-    const filtered = students.filter((s) => {
-        if (activeTab === "ALL") return s.registrationStatus !== "ACTIVE";
-        return s.registrationStatus === activeTab;
-    });
+    // Requeue / delete state
+    const [isRequeueing, setIsRequeueing] = useState<number | null>(null);
+    const [isDeleting, setIsDeleting] = useState<number | null>(null);
+
+    const filtered = students.filter((s) =>
+        s.registrationStatus === activeTab
+    );
 
     const handleApprove = async () => {
         if (!approveTarget || !admissionInput.trim()) return;
@@ -92,6 +104,30 @@ export default function ApplicationsPage() {
         } finally {
             setIsRejecting(false);
         }
+    };
+
+    const rejectionReasonColumn: ColumnDef<Student> = {
+        accessorKey: "rejectionReason",
+        header: "Reason",
+        cell: ({ row }) => {
+            const reason = row.original.rejectionReason;
+            if (!reason) return <span className="text-muted-foreground">—</span>;
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex items-center gap-1 cursor-default max-w-[200px]">
+                                <span className="text-sm truncate">{reason}</span>
+                                <Info className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs whitespace-pre-wrap">
+                            {reason}
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
     };
 
     const columns: ColumnDef<Student>[] = [
@@ -151,12 +187,65 @@ export default function ApplicationsPage() {
                 </span>
             ),
         },
+        ...(activeTab === "REJECTED" ? [rejectionReasonColumn] : []),
         {
             id: "actions",
-            header: "",
+            header: "Action",
             cell: ({ row }) => {
                 const s = row.original;
                 if (s.registrationStatus === "ACTIVE") return null;
+
+                if (s.registrationStatus === "REJECTED") {
+                    return (
+                        <div className="flex items-center gap-1.5">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 px-2 text-xs text-amber-600 border-amber-300 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-800 dark:hover:bg-amber-950/40"
+                                disabled={isRequeueing === s.id}
+                                onClick={async () => {
+                                    setIsRequeueing(s.id);
+                                    try {
+                                        await requeueStudent(s.id);
+                                        toast.success(`${s.fullName} moved back to pending`);
+                                    } catch {
+                                        toast.error("Failed to requeue student");
+                                    } finally {
+                                        setIsRequeueing(null);
+                                    }
+                                }}
+                            >
+                                {isRequeueing === s.id
+                                    ? <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                    : <RotateCcw className="mr-1 h-3 w-3" />}
+                                Queue
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 px-2 text-xs text-destructive border-destructive/30 hover:bg-destructive/5 hover:text-destructive"
+                                disabled={isDeleting === s.id}
+                                onClick={async () => {
+                                    setIsDeleting(s.id);
+                                    try {
+                                        await deleteStudent(s.id);
+                                        toast.success(`${s.fullName} deleted`);
+                                    } catch {
+                                        toast.error("Failed to delete record");
+                                    } finally {
+                                        setIsDeleting(null);
+                                    }
+                                }}
+                            >
+                                {isDeleting === s.id
+                                    ? <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                    : <Trash2 className="mr-1 h-3 w-3" />}
+                                Delete
+                            </Button>
+                        </div>
+                    );
+                }
+
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -199,7 +288,6 @@ export default function ApplicationsPage() {
         >
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
                 <TabsList className="mb-4">
-                    <TabsTrigger value="ALL">All</TabsTrigger>
                     <TabsTrigger value="PENDING_APPROVAL">Pending</TabsTrigger>
                     <TabsTrigger value="REJECTED">Rejected</TabsTrigger>
                 </TabsList>

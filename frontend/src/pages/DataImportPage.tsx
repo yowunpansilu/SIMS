@@ -29,8 +29,9 @@ interface ImportResult {
 type Step = "upload" | "preview" | "importing" | "result";
 
 const CSV_TEMPLATE_HEADERS = [
-    "admissionNumber", "fullName", "dateOfBirth", "gender", "grade", "stream",
-    "medium", "contactNumber", "parentName", "parentContactNumber", "address",
+    "admissionNumber", "nicNumber", "fullName", "dateOfBirth", "gender", "grade",
+    "alStream", "medium", "contactNumber", "whatsappNumber",
+    "parentName", "parentContactNumber", "address",
 ];
 
 const REQUIRED_COLUMNS = ["admissionNumber", "fullName"];
@@ -60,8 +61,8 @@ export default function DataImportPage() {
             toast.error("Only CSV files are supported");
             return;
         }
-        if (f.size > 5 * 1024 * 1024) {
-            toast.error("File size must be under 5MB");
+        if (f.size > 50 * 1024 * 1024) {
+            toast.error("File size must be under 50MB");
             return;
         }
 
@@ -196,7 +197,7 @@ export default function DataImportPage() {
                             if (f) handleFile(f);
                         }}
                     />
-                    <p className="text-xs text-muted-foreground">CSV files only, max 5MB</p>
+                    <p className="text-xs text-muted-foreground">CSV files only, max 50MB</p>
                     <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={downloadTemplate}>
                         <Download className="mr-1.5 h-3.5 w-3.5" />
                         Download Template
