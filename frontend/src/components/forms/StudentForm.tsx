@@ -220,7 +220,6 @@ export default function StudentForm({
                         <SelectContent>
                             <SelectItem value="NOT_APPLIED">Not Applied</SelectItem>
                             <SelectItem value="APPLIED">Applied</SelectItem>
-                            <SelectItem value="PENDING">Pending</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

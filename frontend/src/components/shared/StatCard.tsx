@@ -28,19 +28,19 @@ export default function StatCard({
     return (
         <div
             className={cn(
-                "rounded-lg border border-l-4 bg-white p-6",
+                "rounded-lg border border-l-4 bg-card p-6",
                 accentBorder[accent],
                 className
             )}
         >
-            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
                 {title}
             </p>
-            <p className="text-3xl font-bold text-zinc-900 leading-none">
+            <p className="text-3xl font-bold text-card-foreground leading-none">
                 {value.toLocaleString()}
             </p>
             {description && (
-                <p className="mt-2 text-xs text-zinc-400">{description}</p>
+                <p className="mt-2 text-xs text-muted-foreground">{description}</p>
             )}
         </div>
     );
