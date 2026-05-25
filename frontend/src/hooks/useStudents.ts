@@ -69,6 +69,14 @@ export function useStudents(options?: UseStudentsOptions) {
         return res.data;
     };
 
+    const requeueStudent = async (id: number) => {
+        const res = await api.post<Student>(`/students/${id}/requeue`);
+        setStudents((prev) =>
+            prev.map((s) => (s.id === id ? res.data : s))
+        );
+        return res.data;
+    };
+
     return {
         students,
         isLoading,
@@ -80,5 +88,6 @@ export function useStudents(options?: UseStudentsOptions) {
         getById,
         approveStudent,
         rejectStudent,
+        requeueStudent,
     };
 }

@@ -18,11 +18,11 @@ interface PromotionResult {
 }
 
 const STREAM_BADGE: Record<string, string> = {
-    SCIENCE: "bg-blue-100 text-blue-700",
-    COMMERCE: "bg-green-100 text-green-700",
-    ARTS: "bg-purple-100 text-purple-700",
-    TECHNOLOGY: "bg-orange-100 text-orange-700",
-    OTHER: "bg-zinc-100 text-zinc-600",
+    SCIENCE: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+    COMMERCE: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+    ARTS: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+    TECHNOLOGY: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+    OTHER: "bg-muted text-muted-foreground",
 };
 
 export default function PromotionPage() {
@@ -86,7 +86,7 @@ export default function PromotionPage() {
                         {i > 0 && <ChevronRight className="h-4 w-4 text-zinc-400" />}
                         <span className={cn(
                             "font-medium capitalize",
-                            step === s ? "text-zinc-900" : "text-zinc-400"
+                            step === s ? "text-foreground" : "text-muted-foreground"
                         )}>
                             {i + 1}. {s === "select" ? "Select Students" : s === "review" ? "Review" : "Done"}
                         </span>
@@ -97,7 +97,7 @@ export default function PromotionPage() {
             {/* Step: Select */}
             {step === "select" && (
                 <div className="space-y-4">
-                    <div className="rounded-lg border bg-white overflow-hidden">
+                    <div className="rounded-lg border bg-card overflow-hidden">
                         <div className="flex items-center justify-between border-b px-4 py-3">
                             <div className="flex items-center gap-3">
                                 <input
@@ -107,7 +107,7 @@ export default function PromotionPage() {
                                     onChange={toggleAll}
                                     title="Select all"
                                 />
-                                <span className="text-sm font-medium text-zinc-700">
+                                <span className="text-sm font-medium text-foreground">
                                     {selected.size > 0
                                         ? `${selected.size} of ${grade12Students.length} selected`
                                         : `${grade12Students.length} Grade 12 students`}
@@ -129,7 +129,7 @@ export default function PromotionPage() {
                                 {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
                             </div>
                         ) : grade12Students.length === 0 ? (
-                            <div className="p-8 text-center text-sm text-zinc-400">
+                            <div className="p-8 text-center text-sm text-muted-foreground">
                                 No Grade 12 students found.
                             </div>
                         ) : (
@@ -137,7 +137,7 @@ export default function PromotionPage() {
                                 {grade12Students.map((student) => (
                                     <label
                                         key={student.id}
-                                        className="flex items-center gap-4 px-4 py-3 hover:bg-zinc-50 cursor-pointer"
+                                        className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50 cursor-pointer"
                                     >
                                         <input
                                             type="checkbox"
@@ -145,10 +145,10 @@ export default function PromotionPage() {
                                             checked={selected.has(student.id)}
                                             onChange={() => toggleOne(student.id)}
                                         />
-                                        <span className="font-mono text-xs text-zinc-400 w-24 shrink-0">
+                                        <span className="font-mono text-xs text-muted-foreground w-24 shrink-0">
                                             {student.admissionNumber}
                                         </span>
-                                        <span className="flex-1 text-sm font-medium text-zinc-900">
+                                        <span className="flex-1 text-sm font-medium text-foreground">
                                             {student.fullName}
                                         </span>
                                         <span className={cn(
@@ -168,9 +168,9 @@ export default function PromotionPage() {
             {/* Step: Review */}
             {step === "review" && (
                 <div className="space-y-4">
-                    <div className="rounded-lg border bg-white overflow-hidden">
-                        <div className="border-b px-4 py-3 bg-amber-50">
-                            <p className="text-sm font-medium text-amber-800">
+                    <div className="rounded-lg border bg-card overflow-hidden">
+                        <div className="border-b px-4 py-3 bg-amber-500/10">
+                            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
                                 You are about to promote {selected.size} student{selected.size !== 1 ? "s" : ""} from Grade 12 to Grade 13.
                                 This action cannot be undone.
                             </p>
@@ -178,12 +178,12 @@ export default function PromotionPage() {
                         <div className="divide-y">
                             {selectedStudents.map((student) => (
                                 <div key={student.id} className="flex items-center gap-4 px-4 py-3">
-                                    <span className="font-mono text-xs text-zinc-400 w-24 shrink-0">
+                                    <span className="font-mono text-xs text-muted-foreground w-24 shrink-0">
                                         {student.admissionNumber}
                                     </span>
                                     <span className="flex-1 text-sm font-medium">{student.fullName}</span>
-                                    <span className="text-xs text-zinc-500">Grade 12</span>
-                                    <ChevronRight className="h-4 w-4 text-zinc-300" />
+                                    <span className="text-xs text-muted-foreground">Grade 12</span>
+                                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                                     <span className="text-xs font-semibold text-emerald-600">Grade 13</span>
                                 </div>
                             ))}
@@ -208,21 +208,21 @@ export default function PromotionPage() {
                 <div className="space-y-6">
                     <div className="flex flex-col items-center gap-3 py-8">
                         <CheckCircle2 className="h-14 w-14 text-emerald-500" />
-                        <h2 className="text-xl font-bold text-zinc-900">Promotion Complete</h2>
+                        <h2 className="text-xl font-bold text-foreground">Promotion Complete</h2>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-3 max-w-lg mx-auto">
-                        <div className="rounded-lg border bg-white p-5 text-center">
+                        <div className="rounded-lg border bg-card p-5 text-center">
                             <p className="text-3xl font-bold text-emerald-600">{result.promoted}</p>
-                            <p className="text-xs text-zinc-500 mt-1">Promoted</p>
+                            <p className="text-xs text-muted-foreground mt-1">Promoted</p>
                         </div>
-                        <div className="rounded-lg border bg-white p-5 text-center">
+                        <div className="rounded-lg border bg-card p-5 text-center">
                             <p className="text-3xl font-bold text-amber-500">{result.alreadyGrade13}</p>
-                            <p className="text-xs text-zinc-500 mt-1">Already Grade 13</p>
+                            <p className="text-xs text-muted-foreground mt-1">Already Grade 13</p>
                         </div>
-                        <div className="rounded-lg border bg-white p-5 text-center">
-                            <p className="text-3xl font-bold text-zinc-400">{result.notFound}</p>
-                            <p className="text-xs text-zinc-500 mt-1">Not Found</p>
+                        <div className="rounded-lg border bg-card p-5 text-center">
+                            <p className="text-3xl font-bold text-muted-foreground">{result.notFound}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Not Found</p>
                         </div>
                     </div>
 

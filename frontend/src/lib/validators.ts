@@ -4,9 +4,17 @@ import type { ALStream } from "@/types";
 
 const phoneField = z
     .string()
-    .regex(/^[0-9+\-\s()]*$/, "Invalid phone number format")
+    .refine(
+        (val) => !val || /^(\+94|0)\d{9}$/.test(val),
+        "Must be a valid phone number (e.g. 0771234567)"
+    )
     .optional()
     .or(z.literal(""));
+
+const requiredPhoneField = z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(/^(\+94|0)\d{9}$/, "Must be a valid phone number (e.g. 0771234567)");
 
 const olGrade = z.enum(["A", "B", "C", "S", "W"], { message: "Grade is required" });
 
@@ -24,7 +32,7 @@ export const studentSchema = z.object({
     whatsappNumber: phoneField,
     nicNumber: z
         .string()
-        .regex(/^\d{12}$/, "NIC must be exactly 12 digits")
+        .regex(/^(\d{12}|\d{9}[VXvx])$/, "NIC must be 12 digits or 9 digits followed by V/X")
         .optional()
         .or(z.literal("")),
     grade: z.enum(["12", "13"], { message: "Grade must be 12 or 13" }),
@@ -35,7 +43,7 @@ export const studentSchema = z.object({
     medium: z.enum(["SINHALA", "TAMIL", "ENGLISH"]).optional(),
     parentName: z.string().max(100).optional().or(z.literal("")),
     parentContactNumber: phoneField,
-    alApplicationStatus: z.enum(["NOT_APPLIED", "APPLIED", "PENDING"]).optional(),
+    alApplicationStatus: z.enum(["NOT_APPLIED", "APPLIED"]).optional(),
 });
 
 export type StudentSchemaType = z.infer<typeof studentSchema>;
@@ -48,16 +56,17 @@ export const registrationStep1Schema = z
         fullName: z
             .string()
             .min(2, "Name must be at least 2 characters")
-            .max(100, "Max 100 characters"),
-        nicNumber: z.string().regex(/^\d{12}$/, "NIC must be exactly 12 digits"),
+            .max(100, "Max 100 characters")
+            .regex(/^[^\d]+$/, "Name cannot contain numbers"),
+        nicNumber: z.string().regex(/^(\d{12}|\d{9}[VXvx])$/, "NIC must be 12 digits or 9 digits followed by V/X"),
         gender: z.enum(["MALE", "FEMALE", "OTHER"], { message: "Gender is required" }),
-        dateOfBirth: z.string().optional().or(z.literal("")),
+        dateOfBirth: z.string().min(1, "Date of birth is required"),
         medium: z.enum(["SINHALA", "TAMIL", "ENGLISH"], { message: "Medium is required" }),
-        contactNumber: phoneField,
-        whatsappNumber: phoneField,
-        parentName: z.string().max(100).optional().or(z.literal("")),
-        parentContactNumber: phoneField,
-        address: z.string().max(500).optional().or(z.literal("")),
+        contactNumber: requiredPhoneField,
+        whatsappNumber: requiredPhoneField,
+        parentName: z.string().min(1, "Parent / guardian name is required").max(100),
+        parentContactNumber: requiredPhoneField,
+        address: z.string().min(1, "Address is required").max(500),
     })
     .superRefine((data, ctx) => {
         if (data.studentType === "INTERNAL" && !data.admissionNumber?.trim()) {
@@ -66,6 +75,19 @@ export const registrationStep1Schema = z
                 path: ["admissionNumber"],
                 message: "Admission number is required for internal students",
             });
+        }
+        if (data.dateOfBirth) {
+            const dob = new Date(data.dateOfBirth);
+            if (!isNaN(dob.getTime())) {
+                const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                if (age < 13 || age > 30) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        path: ["dateOfBirth"],
+                        message: "Age must be between 13 and 30 years",
+                    });
+                }
+            }
         }
     });
 
@@ -106,7 +128,7 @@ export const registrationStep3Schema = z
         alSubjects: z
             .array(z.string())
             .length(3, "Exactly 3 A/L subjects are required"),
-        alApplicationStatus: z.enum(["NOT_APPLIED", "APPLIED", "PENDING"]).optional(),
+        alApplicationStatus: z.enum(["NOT_APPLIED", "APPLIED"]).optional(),
     })
     .superRefine((data, ctx) => {
         if (data.alSubjects.length === 3) {
