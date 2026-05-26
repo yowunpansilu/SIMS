@@ -3,6 +3,7 @@ package com.sims.server.service;
 import com.opencsv.CSVReader;
 import com.sims.server.dto.ImportResultDTO;
 import com.sims.server.model.Student;
+import com.sims.server.repository.OLResultRepository;
 import com.sims.server.repository.StudentRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,6 +25,9 @@ public class StudentService {
     @Autowired
     private StudentRepository studentRepository;
 
+    @Autowired
+    private OLResultRepository olResultRepository;
+
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public List<Student> getAllStudents(String q, String grade, String stream) {
@@ -43,6 +47,12 @@ public class StudentService {
     public Student approveStudent(Long id, String admissionNumber) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found: " + id));
+        long olCount = olResultRepository.countByStudentId(id);
+        if (olCount < 9) {
+            throw new RuntimeException(
+                "Cannot approve: student has only " + olCount + "/9 O/L results recorded. " +
+                "All 9 subjects are required before approval.");
+        }
         student.setRegistrationStatus("ACTIVE");
         student.setAdmissionNumber(admissionNumber);
         student.setRejectionReason(null);
@@ -110,6 +120,7 @@ public class StudentService {
         s.setRegistrationStatus("ACTIVE");
         s.setAdmissionNumber(required(cell(line, colIndex, "admissionnumber"), "admissionNumber"));
         s.setFullName(required(cell(line, colIndex, "fullname"), "fullName"));
+        s.setEmail(cell(line, colIndex, "email"));
         s.setNicNumber(cell(line, colIndex, "nicnumber"));
         s.setGrade(cell(line, colIndex, "grade"));
         String alStream = upperOrNull(cell(line, colIndex, "alstream"));
@@ -169,6 +180,7 @@ public class StudentService {
         s.setRegistrationStatus("ACTIVE");
         s.setAdmissionNumber(required(excelCell(row, colIndex, "admissionnumber"), "admissionNumber"));
         s.setFullName(required(excelCell(row, colIndex, "fullname"), "fullName"));
+        s.setEmail(excelCell(row, colIndex, "email"));
         s.setNicNumber(excelCell(row, colIndex, "nicnumber"));
         s.setGrade(excelCell(row, colIndex, "grade"));
         String alStream = upperOrNull(excelCell(row, colIndex, "alstream"));
@@ -214,13 +226,14 @@ public class StudentService {
         try (java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
              java.io.PrintWriter writer = new java.io.PrintWriter(out)) {
 
-            writer.println("admissionNumber,nicNumber,fullName,dateOfBirth,gender,grade,alStream," +
+            writer.println("admissionNumber,nicNumber,fullName,email,dateOfBirth,gender,grade,alStream," +
                            "medium,contactNumber,whatsappNumber,parentName,parentContactNumber,address,studentType");
             for (Student s : students) {
-                writer.printf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s%n",
+                writer.printf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s%n",
                         csv(s.getAdmissionNumber()),
                         csv(s.getNicNumber()),
                         csv(s.getFullName()),
+                        csv(s.getEmail()),
                         csv(s.getDateOfBirth() != null ? s.getDateOfBirth().toString() : ""),
                         csv(s.getGender()),
                         csv(s.getGrade()),
