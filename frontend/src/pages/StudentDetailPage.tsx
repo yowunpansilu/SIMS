@@ -7,7 +7,6 @@ import StudentForm from "@/components/forms/StudentForm";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     Dialog,
@@ -33,7 +32,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { AL_STREAM_LABELS, AL_SUBJECT_LABELS } from "@/lib/alSubjects";
+import {
+    AL_STREAM_LABELS, AL_SUBJECT_LABELS,
+    OL_MOTHER_TONGUE_OPTIONS, OL_RELIGION_OPTIONS,
+    OL_CATEGORY_A, OL_CATEGORY_B, OL_CATEGORY_C,
+} from "@/lib/alSubjects";
 import type { Student, ALStream } from "@/types";
 import type { StudentSchemaType } from "@/lib/validators";
 
@@ -56,13 +59,20 @@ const AL_STATUS_BADGE: Record<string, string> = {
     NOT_APPLIED: "bg-zinc-100 text-zinc-600",
 };
 
-const OL_SUBJECTS = [
-    "MATHEMATICS", "COMBINED_MATHS", "PHYSICS", "CHEMISTRY", "BIOLOGY",
-    "ICT", "COMMERCE", "ACCOUNTING", "ECONOMICS", "BUSINESS_STUDIES",
-    "HISTORY", "GEOGRAPHY", "POLITICAL_SCIENCE",
-    "SINHALA", "TAMIL", "ENGLISH", "LITERATURE",
-    "ART", "MUSIC", "DRAMA", "AGRICULTURE", "BUDDHISM", "OTHER",
+// All valid O/L subjects (mirrors the subject options in alSubjects.ts)
+const OL_SUBJECTS: { value: string; label: string }[] = [
+    ...OL_MOTHER_TONGUE_OPTIONS,
+    { value: "ENGLISH_LANGUAGE", label: "English Language" },
+    { value: "MATHEMATICS",      label: "Mathematics" },
+    { value: "SCIENCE",          label: "Science" },
+    { value: "HISTORY",          label: "History" },
+    ...OL_RELIGION_OPTIONS,
+    ...OL_CATEGORY_A,
+    ...OL_CATEGORY_B,
+    ...OL_CATEGORY_C,
 ];
+
+const OL_SUBJECT_LABEL_MAP = Object.fromEntries(OL_SUBJECTS.map((s) => [s.value, s.label]));
 
 const OL_GRADES = ["A", "B", "C", "S", "W"];
 
@@ -104,7 +114,7 @@ function OLResultForm({ result, onSave, onCancel }: OLRowProps) {
                     <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Subject" /></SelectTrigger>
                     <SelectContent>
                         {OL_SUBJECTS.map((s) => (
-                            <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>
+                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -355,11 +365,21 @@ export default function StudentDetailPage() {
             {/* ── O/L Results ── */}
             <div className="rounded-lg border bg-white p-6">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-zinc-900 uppercase tracking-wide">O/L Examination Results</h3>
-                    <Button size="sm" variant="outline" onClick={() => { setAddingOL(true); setEditingOLId(null); }}>
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Add Result
-                    </Button>
+                    <div>
+                        <h3 className="text-sm font-semibold text-zinc-900 uppercase tracking-wide">O/L Examination Results</h3>
+                        <p className="text-xs text-zinc-400 mt-0.5">
+                            {olResults.results.length}/9 subjects recorded
+                            {olResults.results.length < 9 && (
+                                <span className="ml-1 text-amber-600 font-medium">— {9 - olResults.results.length} required</span>
+                            )}
+                        </p>
+                    </div>
+                    {olResults.results.length < 9 && (
+                        <Button size="sm" variant="outline" onClick={() => { setAddingOL(true); setEditingOLId(null); }}>
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Add Result
+                        </Button>
+                    )}
                 </div>
 
                 {olResults.isLoading ? (
@@ -389,7 +409,7 @@ export default function StudentDetailPage() {
                                     ) : (
                                         <tr key={result.id} className="border-b last:border-0 hover:bg-zinc-50">
                                             <td className="px-3 py-2.5 font-medium">
-                                                {result.subject.replace(/_/g, " ")}
+                                                {OL_SUBJECT_LABEL_MAP[result.subject] ?? result.subject.replace(/_/g, " ")}
                                             </td>
                                             <td className="px-3 py-2.5">
                                                 <span className={cn(
@@ -410,11 +430,13 @@ export default function StudentDetailPage() {
                                                         onClick={() => { setEditingOLId(result.id); setAddingOL(false); }}>
                                                         <Pencil className="h-3.5 w-3.5" />
                                                     </Button>
-                                                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
-                                                        onClick={() => handleDeleteOL(result.id)}
-                                                        disabled={deletingOLId === result.id}>
-                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                    </Button>
+                                                    {olResults.results.length > 9 && (
+                                                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
+                                                            onClick={() => handleDeleteOL(result.id)}
+                                                            disabled={deletingOLId === result.id}>
+                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -431,7 +453,7 @@ export default function StudentDetailPage() {
                                 {olResults.results.length === 0 && !addingOL && (
                                     <tr>
                                         <td colSpan={4} className="px-3 py-6 text-center text-sm text-zinc-400">
-                                            No O/L results recorded. Click Add Result to get started.
+                                            No O/L results recorded. All 9 subjects are required.
                                         </td>
                                     </tr>
                                 )}

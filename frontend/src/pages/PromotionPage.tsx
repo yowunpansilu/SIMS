@@ -153,7 +153,7 @@ export default function PromotionPage() {
                                         </span>
                                         <span className={cn(
                                             "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium shrink-0",
-                                            STREAM_BADGE[student.stream] || STREAM_BADGE.OTHER
+                                            STREAM_BADGE[student.stream ?? "OTHER"] || STREAM_BADGE.OTHER
                                         )}>
                                             {student.stream}
                                         </span>

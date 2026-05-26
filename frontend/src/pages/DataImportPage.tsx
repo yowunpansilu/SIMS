@@ -29,7 +29,7 @@ interface ImportResult {
 type Step = "upload" | "preview" | "importing" | "result";
 
 const CSV_TEMPLATE_HEADERS = [
-    "admissionNumber", "nicNumber", "fullName", "dateOfBirth", "gender", "grade",
+    "admissionNumber", "nicNumber", "fullName", "email", "dateOfBirth", "gender", "grade",
     "alStream", "medium", "contactNumber", "whatsappNumber",
     "parentName", "parentContactNumber", "address",
 ];
