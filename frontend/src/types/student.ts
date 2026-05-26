@@ -1,11 +1,11 @@
 export type StudentType = "INTERNAL" | "EXTERNAL";
-export type RegistrationStatus = "ACTIVE" | "PENDING_APPROVAL" | "REJECTED";
+export type RegistrationStatus = "ACTIVE" | "PENDING_APPROVAL" | "REJECTED" | "SCHEDULED";
 export type ALStream = "PHYSICAL_SCIENCE" | "BIOLOGICAL_SCIENCE" | "COMMERCE" | "TECHNOLOGY" | "ARTS";
 export type Gender = "MALE" | "FEMALE" | "OTHER";
 export type Grade = "12" | "13";
 export type Stream = "SCIENCE" | "COMMERCE" | "ARTS" | "TECHNOLOGY" | "OTHER"; // legacy
 export type Medium = "SINHALA" | "TAMIL" | "ENGLISH";
-export type ALApplicationStatus = "NOT_APPLIED" | "APPLIED" | "PENDING";
+export type ALApplicationStatus = "NOT_APPLIED" | "APPLIED";
 
 export interface OLResultInput {
     subject: string;
@@ -17,6 +17,7 @@ export interface Student {
     id: number;
     admissionNumber?: string;
     fullName: string;
+    email?: string;
     dateOfBirth?: string;
     gender: Gender;
     address?: string;
@@ -39,6 +40,7 @@ export interface Student {
 export interface StudentFormData {
     admissionNumber?: string;
     fullName: string;
+    email?: string;
     dateOfBirth?: string;
     gender?: Gender;
     address?: string;

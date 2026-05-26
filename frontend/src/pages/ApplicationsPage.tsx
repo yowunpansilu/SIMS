@@ -31,6 +31,8 @@ import {
     RotateCcw,
     Trash2,
     Info,
+    BarChart2,
+    CalendarDays,
 } from "lucide-react";
 import {
     Tooltip,
@@ -39,6 +41,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import EmptyState from "@/components/shared/EmptyState";
+import ScheduleInterviewDialog from "@/components/ScheduleInterviewDialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AL_STREAM_LABELS } from "@/lib/alSubjects";
@@ -71,6 +74,8 @@ export default function ApplicationsPage() {
     // Requeue / delete state
     const [isRequeueing, setIsRequeueing] = useState<number | null>(null);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
+
+    const [scheduleOpen, setScheduleOpen] = useState(false);
 
     const filtered = students.filter((s) =>
         s.registrationStatus === activeTab
@@ -163,6 +168,11 @@ export default function ApplicationsPage() {
                     </span>
                 );
             },
+        },
+        {
+            accessorKey: "email",
+            header: "Email",
+            cell: ({ row }) => row.original.email || "—",
         },
         {
             accessorKey: "contactNumber",
@@ -285,6 +295,18 @@ export default function ApplicationsPage() {
         <PageContainer
             title="Student Applications"
             description="External students awaiting approval"
+            actions={
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => window.open("/analytics", "_blank")}>
+                        <BarChart2 className="mr-2 h-4 w-4" />
+                        Analytics
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setScheduleOpen(true)}>
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        Schedule Interviews
+                    </Button>
+                </div>
+            }
         >
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
                 <TabsList className="mb-4">
@@ -397,6 +419,14 @@ export default function ApplicationsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Schedule interviews dialog */}
+            <ScheduleInterviewDialog
+                open={scheduleOpen}
+                onOpenChange={setScheduleOpen}
+                students={students}
+                onScheduled={() => {/* students list auto-refreshes via hook */}}
+            />
         </PageContainer>
     );
 }
