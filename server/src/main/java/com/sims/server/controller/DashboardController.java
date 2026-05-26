@@ -75,7 +75,7 @@ public class DashboardController {
         m.put("admissionNumber", s.getAdmissionNumber());
         m.put("fullName", s.getFullName());
         m.put("grade", s.getGrade());
-        m.put("stream", s.getStream());
+        m.put("stream", s.getAlStream());
         return m;
     }
 

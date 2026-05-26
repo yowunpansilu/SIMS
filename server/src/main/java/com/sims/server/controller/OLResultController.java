@@ -50,6 +50,10 @@ public class OLResultController {
 
     @DeleteMapping("/{resultId}")
     public ResponseEntity<?> deleteResult(@PathVariable Long studentId, @PathVariable Long resultId) {
+        if (olResultRepository.countByStudentId(studentId) <= 9) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Cannot remove O/L result: all 9 subjects are required"));
+        }
         return olResultRepository.findById(resultId).map(result -> {
             if (!result.getStudent().getId().equals(studentId))
                 return ResponseEntity.status(403).body(Map.of("error", "Result does not belong to this student"));

@@ -74,6 +74,7 @@ public class StudentController {
                     student.setAddress(studentDetails.getAddress());
                     student.setContactNumber(studentDetails.getContactNumber());
                     student.setWhatsappNumber(studentDetails.getWhatsappNumber());
+                    student.setEmail(studentDetails.getEmail());
                     student.setNicNumber(studentDetails.getNicNumber());
                     student.setGrade(studentDetails.getGrade());
                     student.setAlStream(studentDetails.getAlStream());
