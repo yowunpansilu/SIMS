@@ -14,6 +14,9 @@ import UserManagementPage from "@/pages/UserManagementPage";
 import PromotionPage from "@/pages/PromotionPage";
 import AuditLogPage from "@/pages/AuditLogPage";
 import ApplicationsPage from "@/pages/ApplicationsPage";
+import ApplyPage from "@/pages/ApplyPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
+import SchedulePage from "@/pages/SchedulePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function App() {
@@ -26,6 +29,7 @@ export default function App() {
           <Routes>
             {/* Public */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/apply" element={<ApplyPage />} />
 
             {/* Protected — wrapped in AppShell layout */}
             <Route
@@ -69,6 +73,22 @@ export default function App() {
                 element={
                   <ProtectedRoute allowedRoles={["ADMIN"]}>
                     <AuditLogPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="analytics"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <AnalyticsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="schedule"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <SchedulePage />
                   </ProtectedRoute>
                 }
               />

@@ -25,6 +25,7 @@ export const studentSchema = z.object({
         .string()
         .min(2, "Name must be at least 2 characters")
         .max(100, "Max 100 characters"),
+    email: z.string().email("Invalid email address").optional().or(z.literal("")),
     dateOfBirth: z.string().optional().or(z.literal("")),
     gender: z.enum(["MALE", "FEMALE", "OTHER"], { message: "Gender is required" }),
     address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
@@ -58,6 +59,7 @@ export const registrationStep1Schema = z
             .min(2, "Name must be at least 2 characters")
             .max(100, "Max 100 characters")
             .regex(/^[^\d]+$/, "Name cannot contain numbers"),
+        email: z.string().email("Invalid email address"),
         nicNumber: z.string().regex(/^(\d{12}|\d{9}[VXvx])$/, "NIC must be 12 digits or 9 digits followed by V/X"),
         gender: z.enum(["MALE", "FEMALE", "OTHER"], { message: "Gender is required" }),
         dateOfBirth: z.string().min(1, "Date of birth is required"),
@@ -80,11 +82,11 @@ export const registrationStep1Schema = z
             const dob = new Date(data.dateOfBirth);
             if (!isNaN(dob.getTime())) {
                 const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-                if (age < 13 || age > 30) {
+                if (age < 13 || age > 19) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
                         path: ["dateOfBirth"],
-                        message: "Age must be between 13 and 30 years",
+                        message: "Age must be between 13 and 19 years",
                     });
                 }
             }
@@ -96,7 +98,7 @@ export type RegistrationStep1Type = z.infer<typeof registrationStep1Schema>;
 // ── Registration Step 2 — O/L Results ────────────────────────────────────────
 export const registrationStep2Schema = z.object({
     olExamYear: z
-        .number({ required_error: "Exam year is required" })
+        .number({ message: "Exam year is required" })
         .int()
         .min(2000, "Year must be 2000 or later")
         .max(2030, "Year must be 2030 or earlier"),
