@@ -14,6 +14,7 @@ import {
     ArrowUpCircle,
     ClipboardList,
     ClipboardCheck,
+    CalendarDays,
 } from "lucide-react";
 import {
     Tooltip,
@@ -34,6 +35,7 @@ const navItems: NavItem[] = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/" },
     { label: "Students", icon: Users, href: "/students" },
     { label: "Applications", icon: ClipboardCheck, href: "/applications", roles: ["ADMIN"] },
+    { label: "Schedule", icon: CalendarDays, href: "/schedule", roles: ["ADMIN"] },
     { label: "Data Import", icon: Upload, href: "/import", roles: ["ADMIN", "CLERK"] },
     { label: "Reports", icon: BarChart3, href: "/reports" },
     { label: "Promotion", icon: ArrowUpCircle, href: "/promote", roles: ["ADMIN", "CLERK"] },

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { decodeNIC } from "@/lib/nicDecoder";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -136,6 +137,20 @@ function Step1Form({
         });
 
     const studentType = watch("studentType");
+    const nicValue = watch("nicNumber");
+
+    // Auto-fill DOB and gender from NIC
+    const [nicAutoFilled, setNicAutoFilled] = useState(false);
+    useEffect(() => {
+        const decoded = decodeNIC(nicValue || "");
+        if (decoded) {
+            setValue("dateOfBirth", decoded.dob, { shouldValidate: true });
+            setValue("gender", decoded.gender, { shouldValidate: true });
+            setNicAutoFilled(true);
+        } else {
+            setNicAutoFilled(false);
+        }
+    }, [nicValue, setValue]);
 
     return (
         <form onSubmit={handleSubmit(onNext)} className="space-y-5">
@@ -205,6 +220,9 @@ function Step1Form({
                     {errors.nicNumber && (
                         <p className="text-xs text-destructive">{errors.nicNumber.message}</p>
                     )}
+                    {nicAutoFilled && !errors.nicNumber && (
+                        <p className="text-xs text-emerald-600">DOB and gender auto-filled from NIC</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
@@ -228,6 +246,9 @@ function Step1Form({
                     </Select>
                     {errors.gender && (
                         <p className="text-xs text-destructive">{errors.gender.message}</p>
+                    )}
+                    {nicAutoFilled && !errors.gender && (
+                        <p className="text-xs text-emerald-600">Auto-filled from NIC</p>
                     )}
                 </div>
 
@@ -260,6 +281,21 @@ function Step1Form({
                     <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
                     {errors.dateOfBirth && (
                         <p className="text-xs text-destructive">{errors.dateOfBirth.message as string}</p>
+                    )}
+                    {nicAutoFilled && !errors.dateOfBirth && (
+                        <p className="text-xs text-emerald-600">Auto-filled from NIC</p>
+                    )}
+                </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        {...register("email")}
+                    />
+                    {errors.email && (
+                        <p className="text-xs text-destructive">{errors.email.message as string}</p>
                     )}
                 </div>
 
@@ -780,6 +816,7 @@ export default function StudentRegistrationDialog({
             const studentPayload = {
                 admissionNumber: step1Data.admissionNumber || undefined,
                 fullName: step1Data.fullName,
+                email: step1Data.email,
                 nicNumber: step1Data.nicNumber,
                 gender: step1Data.gender,
                 dateOfBirth: step1Data.dateOfBirth || undefined,

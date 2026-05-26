@@ -36,6 +36,7 @@ export default function StudentForm({
             ? {
                 admissionNumber: student.admissionNumber || "",
                 fullName: student.fullName,
+                email: student.email || "",
                 dateOfBirth: student.dateOfBirth || "",
                 gender: student.gender,
                 address: student.address || "",
@@ -53,6 +54,7 @@ export default function StudentForm({
             : {
                 admissionNumber: "",
                 fullName: "",
+                email: "",
                 dateOfBirth: "",
                 gender: undefined,
                 address: "",
@@ -96,6 +98,14 @@ export default function StudentForm({
                     <Input id="fullName" placeholder="Student full name" {...register("fullName")} />
                     {errors.fullName && (
                         <p className="text-xs text-destructive">{errors.fullName.message}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" {...register("email")} />
+                    {errors.email && (
+                        <p className="text-xs text-destructive">{errors.email.message}</p>
                     )}
                 </div>
 
