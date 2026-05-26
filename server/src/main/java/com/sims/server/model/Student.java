@@ -31,6 +31,8 @@ public class Student {
 
     private String whatsappNumber;
 
+    private String email;
+
     @Column(length = 12)
     private String nicNumber;       // 12-digit Sri Lankan NIC
 
@@ -93,6 +95,9 @@ public class Student {
 
     public String getWhatsappNumber() { return whatsappNumber; }
     public void setWhatsappNumber(String whatsappNumber) { this.whatsappNumber = whatsappNumber; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
     public String getNicNumber() { return nicNumber; }
     public void setNicNumber(String nicNumber) { this.nicNumber = nicNumber; }
