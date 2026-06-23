@@ -21,6 +21,6 @@ subprojects {
     }
 
     tasks.withType<JavaCompile>().configureEach {
-        options.release.set(23)
+        options.release.set(25)
     }
 }
