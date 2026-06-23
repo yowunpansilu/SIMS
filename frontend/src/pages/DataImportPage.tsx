@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import Papa from "papaparse";
 import PageContainer from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,6 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
-
 interface ParsedRow {
     [key: string]: string;
 }
@@ -47,6 +47,7 @@ function downloadTemplate() {
 }
 
 export default function DataImportPage() {
+    const navigate = useNavigate();
     const [step, setStep] = useState<Step>("upload");
     const [file, setFile] = useState<File | null>(null);
     const [parsedData, setParsedData] = useState<ParsedRow[]>([]);
@@ -163,7 +164,16 @@ export default function DataImportPage() {
     };
 
     return (
-        <PageContainer title="Data Import" description="Import student records from CSV files">
+        <PageContainer
+            title="Data Import"
+            description="Import student records from CSV files"
+            actions={
+                <Button variant="outline" size="sm" onClick={() => navigate("/apply")}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Register New Student
+                </Button>
+            }
+        >
             {/* Step: Upload */}
             {step === "upload" && (
                 <div
