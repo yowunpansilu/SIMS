@@ -33,6 +33,8 @@ services:
       - DB_PASSWORD=admin123
       - MAIL_USERNAME=${MAIL_USERNAME:-}
       - MAIL_APP_PASSWORD=${MAIL_APP_PASSWORD:-}
+      - ADMIN_SETUP_USERNAME=admin
+      - ADMIN_SETUP_PASSWORD=admin123
     depends_on:
       db:
         condition: service_healthy
@@ -46,6 +48,17 @@ services:
       - "5173:80"
     depends_on:
       - server
+
+  seeder:
+    build:
+      context: .
+      dockerfile: seeder.Dockerfile
+    container_name: sims_seeder
+    depends_on:
+      db:
+        condition: service_healthy
+      server:
+        condition: service_started
 
 volumes:
   db_data:

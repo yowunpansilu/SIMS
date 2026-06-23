@@ -72,7 +72,7 @@ const STATUS_STYLES: Record<InterviewDTO["status"], string> = {
 
 const TIMELINE_START = 8;   // 08:00
 const TIMELINE_END   = 18;  // 18:00
-const HOUR_HEIGHT    = 72;  // px per hour
+const HOUR_HEIGHT    = 300; // px per hour (increased to accommodate 10-min slots)
 
 function toDateStr(d: Date) {
     return d.toISOString().split("T")[0];
@@ -132,14 +132,6 @@ export default function SchedulePage() {
         setDate(toDateStr(d));
     };
 
-    const markStatus = async (id: number, status: InterviewDTO["status"]) => {
-        try {
-            const res = await api.patch<InterviewDTO>(`/interviews/${id}/status`, { status });
-            setInterviews((prev) => prev.map((i) => (i.id === id ? res.data : i)));
-        } catch {
-            toast.error("Failed to update status");
-        }
-    };
 
     const handleApprove = async () => {
         if (!approveTarget || !admissionInput.trim()) return;
@@ -256,7 +248,7 @@ export default function SchedulePage() {
                                     if (offsetMinutes < 0 || offsetMinutes >= (TIMELINE_END - TIMELINE_START) * 60) return null;
 
                                     const top = (offsetMinutes / 60) * HOUR_HEIGHT;
-                                    const height = Math.max((interview.durationMinutes / 60) * HOUR_HEIGHT, 52);
+                                    const height = Math.max((interview.durationMinutes / 60) * HOUR_HEIGHT, 50);
                                     const colors = STREAM_COLORS[interview.studentAlStream] ?? {
                                         bg: "bg-muted", text: "text-foreground", border: "border-border", dot: "bg-muted-foreground"
                                     };
@@ -359,19 +351,6 @@ export default function SchedulePage() {
                                                                     </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>Reject application</TooltipContent>
-                                                            </Tooltip>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="ghost"
-                                                                        className="h-7 px-2 text-[10px]"
-                                                                        onClick={() => markStatus(interview.id, "COMPLETED")}
-                                                                    >
-                                                                        Done
-                                                                    </Button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>Mark as completed</TooltipContent>
                                                             </Tooltip>
                                                         </>
                                                     )}

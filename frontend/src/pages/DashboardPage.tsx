@@ -299,7 +299,7 @@ export default function DashboardPage() {
                             <BarChart data={gradeData} barSize={56}>
                                 <XAxis dataKey="grade" tick={{ fontSize: 13 }} axisLine={false} tickLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--muted))" }} />
+                                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(100, 100, 100, 0.1)" }} />
                                 <Bar dataKey="count" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                                     interval={0}
                                 />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--muted))" }} />
+                                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(100, 100, 100, 0.1)" }} />
                                 <Legend verticalAlign="top" height={32} />
                                 <Bar dataKey="pass" name="Pass" fill="hsl(145, 60%, 40%)" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="fail" name="Fail" fill="hsl(0, 68%, 52%)"   radius={[4, 4, 0, 0]} />

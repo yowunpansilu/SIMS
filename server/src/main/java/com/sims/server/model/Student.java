@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "students")
@@ -64,6 +65,14 @@ public class Student {
     @CollectionTable(name = "student_al_subjects", joinColumns = @JoinColumn(name = "student_id"))
     @Column(name = "subject")
     private List<String> alSubjects = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OLResult> olResults = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Interview> interviews = new ArrayList<>();
 
     // Kept for backward-compatibility during migration — populated by StreamMigrationService
     private String stream;

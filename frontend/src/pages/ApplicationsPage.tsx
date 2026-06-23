@@ -89,8 +89,9 @@ export default function ApplicationsPage() {
             toast.success(`${approveTarget.fullName} approved and assigned ${admissionInput.trim()}`);
             setApproveTarget(null);
             setAdmissionInput("");
-        } catch {
-            toast.error("Failed to approve student");
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.error || "Failed to approve student";
+            toast.error(errorMessage);
         } finally {
             setIsApproving(false);
         }
@@ -104,8 +105,9 @@ export default function ApplicationsPage() {
             toast.success(`Application rejected`);
             setRejectTarget(null);
             setRejectReason("");
-        } catch {
-            toast.error("Failed to reject application");
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.error || "Failed to reject application";
+            toast.error(errorMessage);
         } finally {
             setIsRejecting(false);
         }

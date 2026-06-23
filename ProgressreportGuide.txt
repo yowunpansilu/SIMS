@@ -1,0 +1,154 @@
+PROJECT FINAL REPORT
+MIT 593-5
+Capstone Project
+Registration Number
+PROJECT TITLE
+Name of the Degree Program
+Department of Computer Science and Informatics
+Faculty of Applied Sciences
+Uva Wellassa University of Sri Lanka
+2026
+Personal Details:
+Name with initials:
+Registration Number:
+Email:
+Contact Number:
+Address:
+Supervisor Details:
+Name of the Supervisor E-mail
+Name of the Co-supervisor E-mail Contact Number
+(add the table only it is applicable)
+Descriptive General Guidelines
+Your project report must be prepared according to the following instructions. This
+includes general guidelines, assembling of pre-pages, and structuring of the body of the
+text.
+1. General guidelines
+• Paper: The project report should be printed on good quality A4 size paper, on a single
+side.
+• Lettering: Times New Roman. Size will change as per chapters/sections, etc.
+• Spacing: The line spacing should be 1.5. Keep a one-line spacing between paragraphs.
+• Margins: Left - 1.5 inches
+Top, bottom, and right, 1 inch.
+• Tables and Figures: All Tables and Figures must be named with captions, and cited
+inside the text.
+• Reference and citations: Use ACM style referencing. The list of Reference must be
+arranged in citied order, and numbered in square brackets. The corresponding number of
+a reference must be used to cite the particular work inside the text
+(https://www.acm.org/publications/authors/reference-formatting). All items in list of reference
+must be cited inside the text. See the sample for reference and citations (Appendix A).
+• Cover page (a sample is given): Print the following information by leaving appropriate
+line spacing o Title of the report with the course code (20pt, centered, at the top of the
+page)
+o Registration Number (20pt, centered, in the middle of the page) o Title of the
+Project (20pt, bold, centered, in the middle of the page)
+o Degree Program, and date (20pt, centered, at the bottom of the page)
+• Student details and the supervisor details: refer sample
+• Page numbering: All page numbers must be centered at the bottom of each page.
+Roman numbering must be used for pre-pages. No page numbers for the title page.
+Arabic numbering must be used for the body of the project report.
+2. Assembling of Pre-pages
+• The pre-pages headings must be centered. Use the Roman numbers to number the
+prepages and the Appendixes.
+• Group and supervisor details
+• Declaration: Type the information given in the sample below (Appendix B).
+• Dedication: (Optional, but nice to have it)
+• Acknowledgements: Thanks to those who (supervisor, friends, parents) helped
+you.
+• Abstract: This should be one-page description that comprises of problem that you address
+your approach (users, input, output, and process), analysis & design, implementation,
+evaluation and conclusion. Write more about your work. Do not use citations, abbreviations
+and further works in an abstract.
+• Table of Contents
+Here you should list headings of chapters/sections/subsections with page numbers.
+• List of Figures/Tables
+Add the list of Figures/Tables captions followed by names, with page numbers.
+1. Structuring of body of the text
+The report must be structured with reference to the following chapters. Depending on the project
+the structure may slightly change. Note that the names of the headings given below are too generic
+and if you need rename them to reflect about your project (Do not change chapters’ title).
+• All headings must be numbered. Do not use any decorations on headings.
+• Style for the he chapter title: Heading 1, 18pt, bold, Times New Roman.
+• Style for subsequent heading: Heading 2, 16pt, bold, Times New Roman • Style for
+subsections heading: subtitle, 14pt, bold, Times New Roman
+• Body of the text in must be in 12pt justified.
+Table of Content Chapter 1: Introduction
+1. Project Title
+2. Project Description - you should give brief overview of the project. This may have two
+sections.
+3. Background and Motivation - you should describe the background with the support of
+literature. Explain what makes you motivated to do the project. This section should have
+citations, refer to the items in the list of references.
+4. Problem in Brief - describe the problem in the existing system to be addressed
+5. Proposed Solution
+6. Project Aim and Objectives
+7. Significance of the study – Describe the significance of your proposed system by
+comparing the other existing systems
+Chapter 2: Methodology
+1. Introduction - The process you are following through the entire software life cycle (the way
+you gathered requirements, the way you are doing the development of the system, etc)
+2. Requirements Identification
+a. Functional and Non-functional requirements (Briefly mentioned the requirements),
+Describe how you have done the implementation so far by elaborating the necessary
+information
+b. User roles
+c. User levels (if applicable)
+d. System requirements (Hardware / Software) - (Describe why you select or need the
+software and hardware tool/technologies with justification)
+3. System Analysis and design: (Class Diagram, ER Diagram, Use case Diagram), if there are
+additional diagrams attach them as Appendixes.
+4. Technology Adapted - System requirements (Hardware / Software) – (Describe why you
+select or need the software and hardware tool/technologies with justification)
+Chapter 3: Implementation
+Here you provide implementation details of each module that is stated in the design diagram. Remember to
+maintain the consistency between design and the implementation sections. In describing the
+implementation, you may state about flowcharts, algorithms, pseudo codes, code segments as per each
+module in the design. All the diagrams or pictures should be defined as figures or listings and cite inside
+the text. Extra details of implementations (e.g. selected source codes, screenshots) should go to an
+Appendix.
+Chapter 4: Testing and Evaluation
+Report on how you test and evaluate the implemented solution to see whether objectives have been
+achieved. Experimental design, selection of participants, interview techniques, design of questionnaire
+(optional) must be stated here. Here you should also present the results from the test and evaluation in
+graphs/charts/tables, etc. Additional details about the evaluation may go as an appendix (i.e. test cases
+written).
+Chapter 5: Conclusion
+1. Conclusion
+2. Project Plan - Describe the project plans and include the Gantt Chart
+3. Future Work - (mention the functionalities to be done by each individual)
+References
+Use ACM reference style. The list of Reference must be arranged in Cited order, and numbered in square
+brackets
+ACM Reference style https://www.acm.org/publications/authors/reference-formatting
+Appendixes
+Any detailed description, user manual, selected important source codes; set of data, Images of GUI
+(Screenshots) could be included under this. Appendixes must be named in alphabetical order (Appendix A,
+Appendix B…), and also give a name for each appendix.
+Appendix A - Sample for Reference and citations
+Inside the body of the text, you should refer to items in the list of reference in the following
+manner (using square brackets). This is a process of citing of others work.
+Eg : ………………….. Hand crafted algorithms, Mathematical or statistical models, Computer
+vision and artificial intelligence techniques have been used to detect cephalometric landmarks
+[2]. It is evident from the literature that neural network approach can introduce very high level of
+autonomy and accuracy in modeling real world problems [2,3]. For example neural computation
+in medicine for perspectives and prospects has implemented successfully [3-8]. In order to cite
+inside the text in the above manner, the list of reference must be arranged as follows. Note that
+this list is prepared in accordance with the alphabetical order of names of authors. The list of
+reference appears after the chapter on conclusion and further work.
+Appendix B - Sample for Declaration page
+We declare that this project report is out own work and has not been submitted in any form for
+another degree or diploma at any university or other institution of tertiary education. Information
+derived from the published or unpublished work of others has been acknowledged in the text and
+a list of references is given.
+Name of student(s) ………………………………………
+Signature of student(s) & Date
+Supervised by
+Name of Supervisor(s) ………………………………………
+Signature of Supervisor(s)
+Date
+Reference
+[1] David Kosiur. 2001. Understanding Policy-Based Networking (2nd. ed.). Wiley, New York, NY.
+[2] Patricia S. Abril and Robert Plant. 2007. The patent holder's dilemma: Buy, sell, or troll? Commun.
+ACM 50, 1 (Jan. 2007), 36-44. DOI: https://doi.org/10.1145/1188913.1188915
+[3] Sarah Cohen, Werner Nutt, and Yehoshua Sagic. 2007. Deciding equivalences among conjunctive
+aggregate queries. J. ACM 54, 2, Article 5 (April 2007), 50 pages. DOI:
+https://doi.org/10.1145/1219092.1219093
