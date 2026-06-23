@@ -31,5 +31,8 @@ frontendTasks.md
 backendTasks.md
 proposal.txt
 
+# Local credentials — never commit
+server/src/main/resources/application-local.properties
+
 # Frontend Build Artifacts
 client/src/main/resources/web/

@@ -1,0 +1,24 @@
+# Git
+.git
+.gitignore
+
+# Build outputs
+build
+server/build
+client/build
+out
+target
+.gradle
+
+# IDEs
+.idea
+.vscode
+*.iml
+*.swp
+.DS_Store
+
+# Logs
+*.log
+
+# Node (just in case)
+node_modules

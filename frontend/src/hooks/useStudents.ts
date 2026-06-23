@@ -2,7 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import type { Student, StudentFormData } from "@/types";
 
-export function useStudents() {
+interface UseStudentsOptions {
+    registrationStatus?: string;
+    studentType?: string;
+}
+
+export function useStudents(options?: UseStudentsOptions) {
     const [students, setStudents] = useState<Student[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -11,14 +16,18 @@ export function useStudents() {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await api.get<Student[]>("/students");
+            const params = new URLSearchParams();
+            if (options?.registrationStatus) params.set("registrationStatus", options.registrationStatus);
+            if (options?.studentType) params.set("studentType", options.studentType);
+            const query = params.toString();
+            const res = await api.get<Student[]>(query ? `/students?${query}` : "/students");
             setStudents(res.data);
         } catch {
             setError("Failed to load students");
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         fetchStudents();
@@ -46,6 +55,28 @@ export function useStudents() {
         return res.data;
     };
 
+    const approveStudent = async (id: number, admissionNumber: string) => {
+        const res = await api.post<Student>(`/students/${id}/approve`, { admissionNumber });
+        setStudents((prev) => prev.filter((s) => s.id !== id));
+        return res.data;
+    };
+
+    const rejectStudent = async (id: number, reason: string) => {
+        const res = await api.post<Student>(`/students/${id}/reject`, { reason });
+        setStudents((prev) =>
+            prev.map((s) => (s.id === id ? res.data : s))
+        );
+        return res.data;
+    };
+
+    const requeueStudent = async (id: number) => {
+        const res = await api.post<Student>(`/students/${id}/requeue`);
+        setStudents((prev) =>
+            prev.map((s) => (s.id === id ? res.data : s))
+        );
+        return res.data;
+    };
+
     return {
         students,
         isLoading,
@@ -55,5 +86,8 @@ export function useStudents() {
         updateStudent,
         deleteStudent,
         getById,
+        approveStudent,
+        rejectStudent,
+        requeueStudent,
     };
 }

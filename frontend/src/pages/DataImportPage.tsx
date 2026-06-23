@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import Papa from "papaparse";
 import PageContainer from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,11 @@ import {
     CheckCircle2,
     AlertCircle,
     Loader2,
+    Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
-
 interface ParsedRow {
     [key: string]: string;
 }
@@ -27,7 +28,26 @@ interface ImportResult {
 
 type Step = "upload" | "preview" | "importing" | "result";
 
+const CSV_TEMPLATE_HEADERS = [
+    "admissionNumber", "nicNumber", "fullName", "email", "dateOfBirth", "gender", "grade",
+    "alStream", "medium", "contactNumber", "whatsappNumber",
+    "parentName", "parentContactNumber", "address",
+];
+
+const REQUIRED_COLUMNS = ["admissionNumber", "fullName"];
+
+function downloadTemplate() {
+    const blob = new Blob([CSV_TEMPLATE_HEADERS.join(",") + "\n"], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sims-import-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 export default function DataImportPage() {
+    const navigate = useNavigate();
     const [step, setStep] = useState<Step>("upload");
     const [file, setFile] = useState<File | null>(null);
     const [parsedData, setParsedData] = useState<ParsedRow[]>([]);
@@ -42,8 +62,8 @@ export default function DataImportPage() {
             toast.error("Only CSV files are supported");
             return;
         }
-        if (f.size > 5 * 1024 * 1024) {
-            toast.error("File size must be under 5MB");
+        if (f.size > 50 * 1024 * 1024) {
+            toast.error("File size must be under 50MB");
             return;
         }
 
@@ -57,7 +77,13 @@ export default function DataImportPage() {
                     toast.error("CSV file is empty");
                     return;
                 }
-                setHeaders(Object.keys(data[0]));
+                const cols = Object.keys(data[0]).map((c) => c.trim());
+                const missing = REQUIRED_COLUMNS.filter((req) => !cols.includes(req));
+                if (missing.length > 0) {
+                    toast.error(`CSV is missing required columns: ${missing.join(", ")}`);
+                    return;
+                }
+                setHeaders(cols);
                 setParsedData(data);
                 setStep("preview");
             },
@@ -138,7 +164,16 @@ export default function DataImportPage() {
     };
 
     return (
-        <PageContainer title="Data Import" description="Import student records from CSV files">
+        <PageContainer
+            title="Data Import"
+            description="Import student records from CSV files"
+            actions={
+                <Button variant="outline" size="sm" onClick={() => navigate("/apply")}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Register New Student
+                </Button>
+            }
+        >
             {/* Step: Upload */}
             {step === "upload" && (
                 <div
@@ -172,7 +207,11 @@ export default function DataImportPage() {
                             if (f) handleFile(f);
                         }}
                     />
-                    <p className="text-xs text-muted-foreground">CSV files only, max 5MB</p>
+                    <p className="text-xs text-muted-foreground">CSV files only, max 50MB</p>
+                    <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={downloadTemplate}>
+                        <Download className="mr-1.5 h-3.5 w-3.5" />
+                        Download Template
+                    </Button>
                 </div>
             )}
 

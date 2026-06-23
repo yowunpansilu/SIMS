@@ -68,7 +68,6 @@ export default function UserForm({
                 <Label htmlFor="username">Username *</Label>
                 <Input
                     id="username"
-                    placeholder="e.g. john_doe"
                     disabled={!!user}
                     {...register("username")}
                 />
@@ -83,7 +82,7 @@ export default function UserForm({
             {/* Full Name */}
             <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name *</Label>
-                <Input id="fullName" placeholder="John Doe" {...register("fullName")} />
+                <Input id="fullName" {...register("fullName")} />
                 {errors.fullName && (
                     <p className="text-xs text-destructive">{errors.fullName.message as string}</p>
                 )}
@@ -92,7 +91,7 @@ export default function UserForm({
             {/* Email */}
             <div className="space-y-2">
                 <Label htmlFor="email">Email *</Label>
-                <Input id="email" type="email" placeholder="john@school.edu" {...register("email")} />
+                <Input id="email" type="email" {...register("email")} />
                 {errors.email && (
                     <p className="text-xs text-destructive">{errors.email.message as string}</p>
                 )}
@@ -127,7 +126,7 @@ export default function UserForm({
                 <Input
                     id="password"
                     type="password"
-                    placeholder={user ? "Leave blank to keep current" : "Min 6 characters"}
+                    placeholder={user ? "Leave blank to keep current" : undefined}
                     {...register("password")}
                 />
                 {errors.password && (

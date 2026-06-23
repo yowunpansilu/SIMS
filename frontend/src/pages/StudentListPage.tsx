@@ -5,15 +5,16 @@ import { useStudents } from "@/hooks/useStudents";
 import PageContainer from "@/components/layout/PageContainer";
 import { DataTable } from "@/components/shared/DataTable";
 import StudentForm from "@/components/forms/StudentForm";
+import StudentRegistrationDialog from "@/components/forms/StudentRegistrationDialog";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,50 +25,51 @@ import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Users } from "lucide-react";
 import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { Student } from "@/types";
+import { AL_STREAM_LABELS } from "@/lib/alSubjects";
+import type { Student, ALStream } from "@/types";
 import type { StudentSchemaType } from "@/lib/validators";
 
-const streamStyles: Record<string, string> = {
-    SCIENCE: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-    COMMERCE: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-    ARTS: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-    TECHNOLOGY: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
-    OTHER: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+const STREAM_STYLES: Record<string, string> = {
+    PHYSICAL_SCIENCE:   "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+    BIOLOGICAL_SCIENCE: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+    COMMERCE:           "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+    ARTS:               "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+    TECHNOLOGY:         "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+};
+
+const TYPE_STYLES: Record<string, string> = {
+    INTERNAL: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+    EXTERNAL: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300",
 };
 
 export default function StudentListPage() {
-    const { students, isLoading, createStudent, updateStudent, deleteStudent } = useStudents();
+    // Only show ACTIVE students on this page
+    const { students, isLoading, updateStudent, deleteStudent, refresh } = useStudents({
+        registrationStatus: "ACTIVE",
+    });
     const navigate = useNavigate();
 
-    const [sheetOpen, setSheetOpen] = useState(false);
+    const [registerOpen, setRegisterOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState<Student | undefined>();
     const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const handleAdd = () => {
-        setEditingStudent(undefined);
-        setSheetOpen(true);
-    };
-
     const handleEdit = (student: Student) => {
         setEditingStudent(student);
-        setSheetOpen(true);
+        setEditOpen(true);
     };
 
     const handleFormSubmit = async (data: StudentSchemaType) => {
+        if (!editingStudent) return;
         setIsSubmitting(true);
         try {
-            if (editingStudent) {
-                await updateStudent(editingStudent.id, data);
-                toast.success("Student updated successfully");
-            } else {
-                await createStudent(data);
-                toast.success("Student added successfully");
-            }
-            setSheetOpen(false);
+            await updateStudent(editingStudent.id, data);
+            toast.success("Student updated successfully");
+            setEditOpen(false);
         } catch {
-            toast.error(editingStudent ? "Failed to update student" : "Failed to add student");
+            toast.error("Failed to update student");
         } finally {
             setIsSubmitting(false);
         }
@@ -92,7 +94,9 @@ export default function StudentListPage() {
             accessorKey: "admissionNumber",
             header: "Adm. No",
             cell: ({ row }) => (
-                <span className="font-mono text-xs">{row.original.admissionNumber}</span>
+                <span className="font-mono text-xs">
+                    {row.original.admissionNumber || "—"}
+                </span>
             ),
         },
         {
@@ -101,10 +105,24 @@ export default function StudentListPage() {
             cell: ({ row }) => <span className="font-medium">{row.original.fullName}</span>,
         },
         {
+            accessorKey: "studentType",
+            header: "Type",
+            cell: ({ row }) => (
+                <span
+                    className={cn(
+                        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                        TYPE_STYLES[row.original.studentType] ?? TYPE_STYLES.INTERNAL
+                    )}
+                >
+                    {row.original.studentType === "EXTERNAL" ? "External" : "Internal"}
+                </span>
+            ),
+        },
+        {
             accessorKey: "gender",
             header: "Gender",
             cell: ({ row }) => (
-                <span className="capitalize">{row.original.gender.toLowerCase()}</span>
+                <span className="capitalize">{row.original.gender?.toLowerCase() ?? "—"}</span>
             ),
         },
         {
@@ -112,18 +130,22 @@ export default function StudentListPage() {
             header: "Grade",
         },
         {
-            accessorKey: "stream",
+            accessorKey: "alStream",
             header: "Stream",
-            cell: ({ row }) => (
-                <span
-                    className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        streamStyles[row.original.stream] || streamStyles.OTHER
-                    )}
-                >
-                    {row.original.stream.charAt(0) + row.original.stream.slice(1).toLowerCase()}
-                </span>
-            ),
+            cell: ({ row }) => {
+                const stream = row.original.alStream;
+                if (!stream) return <span className="text-muted-foreground">—</span>;
+                return (
+                    <span
+                        className={cn(
+                            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                            STREAM_STYLES[stream] ?? "bg-zinc-100 text-zinc-600"
+                        )}
+                    >
+                        {AL_STREAM_LABELS[stream as ALStream] ?? stream}
+                    </span>
+                );
+            },
         },
         {
             accessorKey: "contactNumber",
@@ -165,11 +187,11 @@ export default function StudentListPage() {
     return (
         <PageContainer
             title="Students"
-            description="Manage student records"
+            description="Active student records"
             actions={
-                <Button onClick={handleAdd}>
+                <Button onClick={() => setRegisterOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Student
+                    Register Student
                 </Button>
             }
         >
@@ -181,42 +203,54 @@ export default function StudentListPage() {
                 searchPlaceholder="Search students…"
                 noResults={
                     <EmptyState
-                        title="No students found"
-                        description="Get started by adding your first student to the system."
+                        title="No active students"
+                        description="Register a new student to get started."
                         icon={Users}
                         action={
-                            <Button onClick={handleAdd}>
+                            <Button onClick={() => setRegisterOpen(true)}>
                                 <Plus className="mr-2 h-4 w-4" />
-                                Add Student
+                                Register Student
                             </Button>
                         }
                     />
                 }
             />
 
-            {/* Add / Edit Sheet */}
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetContent className="sm:max-w-lg overflow-y-auto">
-                    <SheetHeader>
-                        <SheetTitle>{editingStudent ? "Edit Student" : "Add Student"}</SheetTitle>
-                        <SheetDescription>
-                            {editingStudent
-                                ? "Update the student's information below."
-                                : "Fill in the details to register a new student."}
-                        </SheetDescription>
-                    </SheetHeader>
-                    <div className="mt-6">
+            {/* Registration dialog (3-step) */}
+            <StudentRegistrationDialog
+                open={registerOpen}
+                onOpenChange={setRegisterOpen}
+                onSuccess={(student) => {
+                    if (student.registrationStatus === "ACTIVE") {
+                        refresh();
+                        toast.success(`${student.fullName} registered successfully`);
+                    } else {
+                        toast.success(`${student.fullName} submitted for approval`);
+                    }
+                }}
+            />
+
+            {/* Edit dialog */}
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Edit Student</DialogTitle>
+                        <DialogDescription>
+                            Update the student's information below.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-2">
                         <StudentForm
                             student={editingStudent}
                             onSubmit={handleFormSubmit}
-                            onCancel={() => setSheetOpen(false)}
+                            onCancel={() => setEditOpen(false)}
                             isSubmitting={isSubmitting}
                         />
                     </div>
-                </SheetContent>
-            </Sheet>
+                </DialogContent>
+            </Dialog>
 
-            {/* Delete Confirmation */}
+            {/* Delete confirmation */}
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => !open && setDeleteTarget(null)}

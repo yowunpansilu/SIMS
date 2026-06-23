@@ -11,6 +11,12 @@ import StudentDetailPage from "@/pages/StudentDetailPage";
 import DataImportPage from "@/pages/DataImportPage";
 import ReportsPage from "@/pages/ReportsPage";
 import UserManagementPage from "@/pages/UserManagementPage";
+import PromotionPage from "@/pages/PromotionPage";
+import AuditLogPage from "@/pages/AuditLogPage";
+import ApplicationsPage from "@/pages/ApplicationsPage";
+import ApplyPage from "@/pages/ApplyPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
+import SchedulePage from "@/pages/SchedulePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function App() {
@@ -23,6 +29,7 @@ export default function App() {
           <Routes>
             {/* Public */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/apply" element={<ApplyPage />} />
 
             {/* Protected — wrapped in AppShell layout */}
             <Route
@@ -38,10 +45,50 @@ export default function App() {
               <Route path="import" element={<DataImportPage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route
+                path="promote"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CLERK"]}>
+                    <PromotionPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="users"
                 element={
                   <ProtectedRoute allowedRoles={["ADMIN"]}>
                     <UserManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="applications"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <ApplicationsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="audit"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <AuditLogPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="analytics"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <AnalyticsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="schedule"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <SchedulePage />
                   </ProtectedRoute>
                 }
               />

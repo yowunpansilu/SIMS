@@ -1,0 +1,12 @@
+
+> frontend@0.0.0 dev
+> vite
+
+
+  VITE v7.3.1  ready in 342 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+3:09:44 PM [vite] vite.config.ts changed, restarting server...
+3:09:44 PM [vite] server restarted.
+3:10:08 PM [vite] (client) hmr update /src/App.tsx, /src/index.css

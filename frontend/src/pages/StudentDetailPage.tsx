@@ -1,54 +1,154 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useStudents } from "@/hooks/useStudents";
+import { useOLResults, type OLResult } from "@/hooks/useOLResults";
 import PageContainer from "@/components/layout/PageContainer";
 import StudentForm from "@/components/forms/StudentForm";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     ArrowLeft,
     Pencil,
     Trash2,
-    User,
-    Calendar,
-    MapPin,
-    Phone,
-    BookOpen,
-    GraduationCap,
-    Hash,
+    Plus,
+    Check,
+    X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { Student } from "@/types";
+import {
+    AL_STREAM_LABELS, AL_SUBJECT_LABELS,
+    OL_MOTHER_TONGUE_OPTIONS, OL_RELIGION_OPTIONS,
+    OL_CATEGORY_A, OL_CATEGORY_B, OL_CATEGORY_C,
+} from "@/lib/alSubjects";
+import type { Student, ALStream } from "@/types";
 import type { StudentSchemaType } from "@/lib/validators";
 
-const streamColors: Record<string, string> = {
-    SCIENCE: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-    COMMERCE: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-    ARTS: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-    TECHNOLOGY: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
-    OTHER: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+const STREAM_BADGE: Record<string, string> = {
+    PHYSICAL_SCIENCE:   "bg-blue-100 text-blue-700",
+    BIOLOGICAL_SCIENCE: "bg-emerald-100 text-emerald-700",
+    COMMERCE:           "bg-green-100 text-green-700",
+    ARTS:               "bg-purple-100 text-purple-700",
+    TECHNOLOGY:         "bg-orange-100 text-orange-700",
 };
 
-function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | number }) {
+const TYPE_BADGE: Record<string, string> = {
+    INTERNAL: "bg-zinc-100 text-zinc-600",
+    EXTERNAL: "bg-sky-100 text-sky-700",
+};
+
+const AL_STATUS_BADGE: Record<string, string> = {
+    APPLIED: "bg-emerald-100 text-emerald-700",
+    PENDING: "bg-amber-100 text-amber-700",
+    NOT_APPLIED: "bg-zinc-100 text-zinc-600",
+};
+
+// All valid O/L subjects (mirrors the subject options in alSubjects.ts)
+const OL_SUBJECTS: { value: string; label: string }[] = [
+    ...OL_MOTHER_TONGUE_OPTIONS,
+    { value: "ENGLISH_LANGUAGE", label: "English Language" },
+    { value: "MATHEMATICS",      label: "Mathematics" },
+    { value: "SCIENCE",          label: "Science" },
+    { value: "HISTORY",          label: "History" },
+    ...OL_RELIGION_OPTIONS,
+    ...OL_CATEGORY_A,
+    ...OL_CATEGORY_B,
+    ...OL_CATEGORY_C,
+];
+
+const OL_SUBJECT_LABEL_MAP = Object.fromEntries(OL_SUBJECTS.map((s) => [s.value, s.label]));
+
+const OL_GRADES = ["A", "B", "C", "S", "W"];
+
+function InfoRow({ label, value, className }: { label: string; value?: string | number | null; className?: string }) {
     return (
-        <div className="flex items-start gap-3 py-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                <Icon className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div>
-                <p className="text-xs font-medium text-muted-foreground">{label}</p>
-                <p className="text-sm font-medium">{value || "—"}</p>
-            </div>
+        <div className={cn("flex flex-col py-2.5 border-b last:border-0", className)}>
+            <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">{label}</span>
+            <span className="mt-0.5 text-sm font-medium text-zinc-900">{value || "—"}</span>
         </div>
+    );
+}
+
+interface OLRowProps {
+    result?: OLResult;
+    onSave: (data: Omit<OLResult, "id">) => Promise<void>;
+    onCancel: () => void;
+}
+
+function OLResultForm({ result, onSave, onCancel }: OLRowProps) {
+    const [subject, setSubject] = useState(result?.subject || "");
+    const [grade, setGrade] = useState(result?.grade || "");
+    const [examYear, setExamYear] = useState(result?.examYear?.toString() || "");
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = async () => {
+        if (!subject || !grade) { toast.error("Subject and grade are required"); return; }
+        setSaving(true);
+        try {
+            await onSave({ subject, grade, examYear: examYear ? Number(examYear) : null });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <tr className="bg-zinc-50">
+            <td className="px-3 py-2">
+                <Select value={subject} onValueChange={setSubject}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Subject" /></SelectTrigger>
+                    <SelectContent>
+                        {OL_SUBJECTS.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </td>
+            <td className="px-3 py-2">
+                <Select value={grade} onValueChange={setGrade}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Grade" /></SelectTrigger>
+                    <SelectContent>
+                        {OL_GRADES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </td>
+            <td className="px-3 py-2">
+                <Input
+                    className="h-8 text-xs"
+                    placeholder="e.g. 2023"
+                    value={examYear}
+                    onChange={(e) => setExamYear(e.target.value)}
+                    type="number"
+                    min={2000}
+                    max={2099}
+                />
+            </td>
+            <td className="px-3 py-2">
+                <div className="flex gap-1">
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave} disabled={saving}>
+                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={onCancel}>
+                        <X className="h-3.5 w-3.5 text-zinc-500" />
+                    </Button>
+                </div>
+            </td>
+        </tr>
     );
 }
 
@@ -56,6 +156,7 @@ export default function StudentDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { getById, updateStudent, deleteStudent } = useStudents();
+    const olResults = useOLResults(Number(id));
 
     const [student, setStudent] = useState<Student | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +164,10 @@ export default function StudentDetailPage() {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    const [addingOL, setAddingOL] = useState(false);
+    const [editingOLId, setEditingOLId] = useState<number | null>(null);
+    const [deletingOLId, setDeletingOLId] = useState<number | null>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -102,6 +207,30 @@ export default function StudentDetailPage() {
         }
     };
 
+    const handleAddOL = async (data: Omit<OLResult, "id">) => {
+        await olResults.addResult(data);
+        setAddingOL(false);
+        toast.success("O/L result added");
+    };
+
+    const handleUpdateOL = async (resultId: number, data: Omit<OLResult, "id">) => {
+        await olResults.updateResult(resultId, data);
+        setEditingOLId(null);
+        toast.success("O/L result updated");
+    };
+
+    const handleDeleteOL = async (resultId: number) => {
+        setDeletingOLId(resultId);
+        try {
+            await olResults.deleteResult(resultId);
+            toast.success("O/L result removed");
+        } catch {
+            toast.error("Failed to remove O/L result");
+        } finally {
+            setDeletingOLId(null);
+        }
+    };
+
     if (isLoading) {
         return (
             <PageContainer title="Student Details">
@@ -120,7 +249,7 @@ export default function StudentDetailPage() {
         return (
             <PageContainer title="Student Not Found">
                 <div className="flex flex-col items-center gap-4 py-16">
-                    <p className="text-muted-foreground">The student record could not be found.</p>
+                    <p className="text-zinc-500">The student record could not be found.</p>
                     <Button variant="outline" onClick={() => navigate("/students")}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Students
@@ -133,7 +262,7 @@ export default function StudentDetailPage() {
     return (
         <PageContainer
             title={student.fullName}
-            description={`Admission No: ${student.admissionNumber}`}
+            description={student.admissionNumber ? `Admission No: ${student.admissionNumber}` : `NIC: ${student.nicNumber ?? "—"}`}
             actions={
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => navigate("/students")}>
@@ -151,57 +280,197 @@ export default function StudentDetailPage() {
                 </div>
             }
         >
+            {/* ── Header badges ── */}
+            <div className="flex flex-wrap gap-2 mb-6">
+                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", TYPE_BADGE[student.studentType] ?? TYPE_BADGE.INTERNAL)}>
+                    {student.studentType === "EXTERNAL" ? "External" : "Internal"}
+                </span>
+                {student.alStream && (
+                    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", STREAM_BADGE[student.alStream] ?? "bg-zinc-100 text-zinc-600")}>
+                        {AL_STREAM_LABELS[student.alStream as ALStream] ?? student.alStream}
+                    </span>
+                )}
+                <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-2.5 py-0.5 text-xs font-medium">
+                    Grade {student.grade}
+                </span>
+                {student.medium && (
+                    <span className="inline-flex items-center rounded-full bg-zinc-100 text-zinc-600 px-2.5 py-0.5 text-xs font-medium">
+                        {student.medium.charAt(0) + student.medium.slice(1).toLowerCase()} Medium
+                    </span>
+                )}
+                {student.alApplicationStatus && (
+                    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", AL_STATUS_BADGE[student.alApplicationStatus] || AL_STATUS_BADGE.NOT_APPLIED)}>
+                        A/L: {student.alApplicationStatus.replace(/_/g, " ")}
+                    </span>
+                )}
+            </div>
+
+            {/* ── Two-column cards ── */}
             <div className="grid gap-6 md:grid-cols-2">
-                {/* Personal Information */}
-                <div className="rounded-lg border bg-card p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold">Personal Information</h3>
-                    <div className="divide-y">
-                        <InfoRow icon={Hash} label="Admission Number" value={student.admissionNumber} />
-                        <InfoRow icon={User} label="Full Name" value={student.fullName} />
-                        <InfoRow
-                            icon={User}
-                            label="Gender"
-                            value={student.gender.charAt(0) + student.gender.slice(1).toLowerCase()}
-                        />
-                        <InfoRow icon={Calendar} label="Date of Birth" value={student.dateOfBirth} />
-                    </div>
+                <div className="rounded-lg border bg-white p-6">
+                    <h3 className="mb-3 text-sm font-semibold text-zinc-900 uppercase tracking-wide">Personal Information</h3>
+                    <InfoRow label="Full Name" value={student.fullName} />
+                    <InfoRow label="Admission Number" value={student.admissionNumber} />
+                    <InfoRow label="NIC Number" value={student.nicNumber} />
+                    <InfoRow label="Gender" value={student.gender ? student.gender.charAt(0) + student.gender.slice(1).toLowerCase() : undefined} />
+                    <InfoRow label="Date of Birth" value={student.dateOfBirth} />
+                    <InfoRow label="Address" value={student.address} />
                 </div>
 
-                {/* Academic & Contact */}
-                <div className="rounded-lg border bg-card p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold">Academic & Contact</h3>
-                    <div className="divide-y">
-                        <InfoRow icon={BookOpen} label="Grade" value={student.grade} />
-                        <div className="flex items-start gap-3 py-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                                <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">Stream</p>
-                                <span
-                                    className={cn(
-                                        "mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                                        streamColors[student.stream] || streamColors.OTHER
-                                    )}
-                                >
-                                    {student.stream.charAt(0) + student.stream.slice(1).toLowerCase()}
-                                </span>
-                            </div>
-                        </div>
-                        <InfoRow icon={Phone} label="Contact Number" value={student.contactNumber} />
-                        <InfoRow icon={MapPin} label="Address" value={student.address} />
-                    </div>
+                <div className="rounded-lg border bg-white p-6">
+                    <h3 className="mb-3 text-sm font-semibold text-zinc-900 uppercase tracking-wide">Academic & Contact</h3>
+                    <InfoRow label="Grade" value={student.grade ? `Grade ${student.grade}` : undefined} />
+                    <InfoRow label="Stream" value={student.alStream ? (AL_STREAM_LABELS[student.alStream as ALStream] ?? student.alStream) : undefined} />
+                    <InfoRow label="NIC Number" value={student.nicNumber} />
+                    <InfoRow label="WhatsApp" value={student.whatsappNumber} />
+                    <InfoRow label="Medium" value={student.medium} />
+                    <InfoRow label="Contact Number" value={student.contactNumber} />
+                    <InfoRow label="Parent / Guardian" value={student.parentName} />
+                    <InfoRow label="Parent Contact" value={student.parentContactNumber} />
                 </div>
             </div>
 
-            {/* Edit Sheet */}
-            <Sheet open={editOpen} onOpenChange={setEditOpen}>
-                <SheetContent className="sm:max-w-lg overflow-y-auto">
-                    <SheetHeader>
-                        <SheetTitle>Edit Student</SheetTitle>
-                        <SheetDescription>Update the student's information below.</SheetDescription>
-                    </SheetHeader>
-                    <div className="mt-6">
+            {/* ── A/L Stream & Subjects ── */}
+            {(student.alStream || (student.alSubjects && student.alSubjects.length > 0)) && (
+                <div className="rounded-lg border bg-white p-6">
+                    <h3 className="mb-3 text-sm font-semibold text-zinc-900 uppercase tracking-wide">
+                        A/L Stream & Subjects
+                    </h3>
+                    {student.alStream && (
+                        <div className="mb-3">
+                            <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Stream</span>
+                            <p className="mt-0.5 text-sm font-medium text-zinc-900">
+                                {AL_STREAM_LABELS[student.alStream as ALStream] ?? student.alStream}
+                            </p>
+                        </div>
+                    )}
+                    {student.alSubjects && student.alSubjects.length > 0 && (
+                        <div>
+                            <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Subjects</span>
+                            <div className="mt-1.5 flex flex-wrap gap-2">
+                                {student.alSubjects.map((s) => (
+                                    <span
+                                        key={s}
+                                        className="inline-flex items-center rounded-md bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+                                    >
+                                        {AL_SUBJECT_LABELS[s] ?? s.replace(/_/g, " ")}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ── O/L Results ── */}
+            <div className="rounded-lg border bg-white p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 className="text-sm font-semibold text-zinc-900 uppercase tracking-wide">O/L Examination Results</h3>
+                        <p className="text-xs text-zinc-400 mt-0.5">
+                            {olResults.results.length}/9 subjects recorded
+                            {olResults.results.length < 9 && (
+                                <span className="ml-1 text-amber-600 font-medium">— {9 - olResults.results.length} required</span>
+                            )}
+                        </p>
+                    </div>
+                    {olResults.results.length < 9 && (
+                        <Button size="sm" variant="outline" onClick={() => { setAddingOL(true); setEditingOLId(null); }}>
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Add Result
+                        </Button>
+                    )}
+                </div>
+
+                {olResults.isLoading ? (
+                    <div className="space-y-2">
+                        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b">
+                                    <th className="px-3 pb-2 text-left text-xs font-semibold uppercase tracking-widest text-zinc-500">Subject</th>
+                                    <th className="px-3 pb-2 text-left text-xs font-semibold uppercase tracking-widest text-zinc-500">Grade</th>
+                                    <th className="px-3 pb-2 text-left text-xs font-semibold uppercase tracking-widest text-zinc-500">Year</th>
+                                    <th className="px-3 pb-2" />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {olResults.results.map((result) =>
+                                    editingOLId === result.id ? (
+                                        <OLResultForm
+                                            key={result.id}
+                                            result={result}
+                                            onSave={(data) => handleUpdateOL(result.id, data)}
+                                            onCancel={() => setEditingOLId(null)}
+                                        />
+                                    ) : (
+                                        <tr key={result.id} className="border-b last:border-0 hover:bg-zinc-50">
+                                            <td className="px-3 py-2.5 font-medium">
+                                                {OL_SUBJECT_LABEL_MAP[result.subject] ?? result.subject.replace(/_/g, " ")}
+                                            </td>
+                                            <td className="px-3 py-2.5">
+                                                <span className={cn(
+                                                    "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold",
+                                                    result.grade === "A" && "bg-emerald-100 text-emerald-700",
+                                                    result.grade === "B" && "bg-blue-100 text-blue-700",
+                                                    result.grade === "C" && "bg-sky-100 text-sky-700",
+                                                    result.grade === "S" && "bg-amber-100 text-amber-700",
+                                                    result.grade === "W" && "bg-red-100 text-red-700",
+                                                )}>
+                                                    {result.grade}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-zinc-500">{result.examYear || "—"}</td>
+                                            <td className="px-3 py-2.5">
+                                                <div className="flex gap-1">
+                                                    <Button size="icon" variant="ghost" className="h-7 w-7"
+                                                        onClick={() => { setEditingOLId(result.id); setAddingOL(false); }}>
+                                                        <Pencil className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    {olResults.results.length > 9 && (
+                                                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
+                                                            onClick={() => handleDeleteOL(result.id)}
+                                                            disabled={deletingOLId === result.id}>
+                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                )}
+
+                                {addingOL && (
+                                    <OLResultForm
+                                        onSave={handleAddOL}
+                                        onCancel={() => setAddingOL(false)}
+                                    />
+                                )}
+
+                                {olResults.results.length === 0 && !addingOL && (
+                                    <tr>
+                                        <td colSpan={4} className="px-3 py-6 text-center text-sm text-zinc-400">
+                                            No O/L results recorded. All 9 subjects are required.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* Edit Dialog */}
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Edit Student</DialogTitle>
+                        <DialogDescription>Update the student's information below.</DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-2">
                         <StudentForm
                             student={student}
                             onSubmit={handleUpdate}
@@ -209,10 +478,9 @@ export default function StudentDetailPage() {
                             isSubmitting={isSubmitting}
                         />
                     </div>
-                </SheetContent>
-            </Sheet>
+                </DialogContent>
+            </Dialog>
 
-            {/* Delete Confirmation */}
             <ConfirmDialog
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}
