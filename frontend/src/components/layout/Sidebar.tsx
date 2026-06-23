@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import {
@@ -51,6 +51,7 @@ interface SidebarProps {
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogout = () => {
         logout();
@@ -96,20 +97,22 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 {/* Navigation */}
                 <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
                     {visibleItems.map((item) => {
+                        const isActive = item.href === "/"
+                            ? location.pathname === "/"
+                            : location.pathname.startsWith(item.href);
+
                         const link = (
                             <NavLink
                                 key={item.href}
                                 to={item.href}
                                 end={item.href === "/"}
-                                className={({ isActive }) =>
-                                    cn(
-                                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
-                                        collapsed && "justify-center px-0 py-2.5",
-                                        isActive
-                                            ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white"
-                                            : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
-                                    )
-                                }
+                                className={cn(
+                                    "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                                    collapsed && "justify-center px-0 py-2.5",
+                                    isActive
+                                        ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white"
+                                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+                                )}
                             >
                                 <item.icon className="h-4 w-4 shrink-0" />
                                 {!collapsed && <span className="truncate">{item.label}</span>}
